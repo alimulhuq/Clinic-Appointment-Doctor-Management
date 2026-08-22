@@ -1,1 +1,0 @@
-# Clinic-Appointment-Doctor-Management
