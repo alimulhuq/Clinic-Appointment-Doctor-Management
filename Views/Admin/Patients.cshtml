@@ -1,0 +1,41 @@
+﻿@model List<ClinicManagementSystem.ViewModels.PatientListItemViewModel>
+
+@{
+    ViewData["Title"] = "Manage Patients";
+}
+
+<div class="container py-4">
+
+    <h3 class="mb-4">Manage Patients</h3>
+
+    <div class="card">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Patient ID</th>
+                    <th>Phone</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="5" class="text-center text-muted">No patients found.</td></tr>
+                }
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.FullName</td>
+                        <td>@p.PatientCode</td>
+                        <td>@p.Phone</td>
+                        <td>@p.Age</td>
+                        <td>@p.Gender</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

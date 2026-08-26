@@ -1,0 +1,97 @@
+﻿@model ClinicManagementSystem.ViewModels.DoctorSchedulePageViewModel
+
+@{
+    ViewData["Title"] = "My Schedule";
+}
+
+<div class="container py-4">
+
+    <h3 class="mb-4">My Schedule</h3>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Add Availability
+        </div>
+        <div class="card-body">
+
+            <form asp-controller="Doctor" asp-action="Schedule" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+                        <label class="form-label">Day</label>
+                        <select asp-for="NewSchedule.Day" class="form-select">
+                            <option value="Sunday">Sunday</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                        </select>
+                        <span asp-validation-for="NewSchedule.Day" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Start Time</label>
+                        <input asp-for="NewSchedule.StartTime" class="form-control" placeholder="e.g. 10:00 AM" />
+                        <span asp-validation-for="NewSchedule.StartTime" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">End Time</label>
+                        <input asp-for="NewSchedule.EndTime" class="form-control" placeholder="e.g. 1:00 PM" />
+                        <span asp-validation-for="NewSchedule.EndTime" class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">
+                    Save Availability
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            Current Schedule
+        </div>
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ScheduleList)
+                {
+                    <tr>
+                        <td>@item.Day</td>
+                        <td>@item.StartTime</td>
+                        <td>@item.EndTime</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

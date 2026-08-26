@@ -1,0 +1,276 @@
+﻿@model ClinicManagementSystem.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Patient Registration";
+}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7">
+
+            <div class="card shadow border-0">
+
+                <div class="card-body p-4 p-md-5">
+
+                    <!-- Header -->
+
+                    <div class="text-center mb-4">
+
+                        <div class="fs-1">🏥</div>
+
+                        <h3 class="fw-bold">
+                            Create Patient Account
+                        </h3>
+
+                        <p class="text-muted">
+                            Register to book appointments with our doctors.
+                        </p>
+
+                    </div>
+
+
+                    <form asp-action="Register"
+                          asp-controller="Account"
+                          method="post">
+
+                        <div class="row">
+
+                            <!-- Full Name -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="FullName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="FullName"
+                                       class="form-control"
+                                       placeholder="Enter full name" />
+
+                                <span asp-validation-for="FullName"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Email -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Email"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Email"
+                                       class="form-control"
+                                       placeholder="Enter email" />
+
+                                <span asp-validation-for="Email"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Phone -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Phone"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Phone"
+                                       class="form-control"
+                                       placeholder="Enter phone number" />
+
+                                <span asp-validation-for="Phone"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Date of Birth -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="DateOfBirth"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="DateOfBirth"
+                                       class="form-control" />
+
+                                <span asp-validation-for="DateOfBirth"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Gender -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Gender"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="Gender"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select Gender
+                                    </option>
+
+                                    <option value="Male">
+                                        Male
+                                    </option>
+
+                                    <option value="Female">
+                                        Female
+                                    </option>
+
+                                    <option value="Other">
+                                        Other
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="Gender"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Guardian -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="GuardianName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="GuardianName"
+                                       class="form-control"
+                                       placeholder="Optional" />
+
+                            </div>
+
+
+                            <!-- Address -->
+
+                            <div class="col-12 mb-3">
+
+                                <label asp-for="Address"
+                                       class="form-label">
+                                </label>
+
+                                <textarea asp-for="Address"
+                                          class="form-control"
+                                          rows="2"
+                                          placeholder="Enter address">
+                                </textarea>
+
+                                <span asp-validation-for="Address"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Password -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Password"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Password"
+                                       class="form-control"
+                                       placeholder="Minimum 6 characters" />
+
+                                <span asp-validation-for="Password"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Confirm Password -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="ConfirmPassword"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="ConfirmPassword"
+                                       class="form-control"
+                                       placeholder="Re-enter password" />
+
+                                <span asp-validation-for="ConfirmPassword"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Register Button -->
+
+                        <div class="d-grid mt-3">
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg">
+
+                                Create Patient Account
+
+                            </button>
+
+                        </div>
+
+
+                        <!-- Login Link -->
+
+                        <div class="text-center mt-4">
+
+                            <span class="text-muted">
+                                Already have an account?
+                            </span>
+
+                            <a asp-controller="Account"
+                               asp-action="Login"
+                               class="text-decoration-none">
+
+                                Login
+
+                            </a>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

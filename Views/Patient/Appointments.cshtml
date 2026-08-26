@@ -1,0 +1,113 @@
+﻿@{
+    ViewData["Title"] = "My Appointments";
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            My Appointments
+        </h2>
+
+        <p class="text-muted">
+            View your upcoming and previous appointments.
+        </p>
+
+    </div>
+
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                Dr. Ahmed Rahman
+                            </td>
+
+                            <td>
+                                Cardiologist
+                            </td>
+
+                            <td>
+                                28 Aug 2026
+                            </td>
+
+                            <td>
+                                10:30 AM
+                            </td>
+
+                            <td>
+                                <span class="badge bg-success">
+                                    Confirmed
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Dr. Nusrat Jahan
+                            </td>
+
+                            <td>
+                                General Physician
+                            </td>
+
+                            <td>
+                                02 Sep 2026
+                            </td>
+
+                            <td>
+                                04:00 PM
+                            </td>
+
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    Pending
+                                </span>
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

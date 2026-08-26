@@ -1,0 +1,269 @@
+﻿@model ClinicManagementSystem.ViewModels.DoctorProfileViewModel
+
+@{
+    ViewData["Title"] = "Doctor Profile";
+}
+
+<div class="container py-4">
+
+    <!-- Header -->
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            My Profile
+        </h2>
+
+        <p class="text-muted">
+            View and update your professional information.
+        </p>
+
+    </div>
+
+
+    <!-- Success -->
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success">
+            @ViewBag.SuccessMessage
+        </div>
+    }
+
+
+    <div class="row">
+
+        <!-- Profile Form -->
+
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <form asp-action="Profile"
+                          asp-controller="Doctor"
+                          method="post">
+
+                        <div class="row">
+
+
+                            <!-- Full Name -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="FullName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="FullName"
+                                       class="form-control" />
+
+                                <span asp-validation-for="FullName"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Email -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Email"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Email"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Email"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Phone -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Phone"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Phone"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Phone"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Specialization -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Specialization"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="Specialization"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select Specialization
+                                    </option>
+
+                                    <option value="Cardiologist">
+                                        Cardiologist
+                                    </option>
+
+                                    <option value="General Physician">
+                                        General Physician
+                                    </option>
+
+                                    <option value="Dermatologist">
+                                        Dermatologist
+                                    </option>
+
+                                    <option value="Neurologist">
+                                        Neurologist
+                                    </option>
+
+                                    <option value="Orthopedic">
+                                        Orthopedic
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="Specialization"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Qualification -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Qualification"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Qualification"
+                                       class="form-control"
+                                       placeholder="Example: MBBS, MD" />
+
+                                <span asp-validation-for="Qualification"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Experience -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Experience"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Experience"
+                                       type="number"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Experience"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- About -->
+
+                            <div class="col-12 mb-3">
+
+                                <label asp-for="About"
+                                       class="form-label">
+                                    About Doctor
+                                </label>
+
+                                <textarea asp-for="About"
+                                          class="form-control"
+                                          rows="4"
+                                          placeholder="Write a short professional description">
+                                </textarea>
+
+                                <span asp-validation-for="About"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <button type="submit"
+                                class="btn btn-primary px-4">
+
+                            Save Changes
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Profile Summary -->
+
+        <div class="col-lg-4 mt-4 mt-lg-0">
+
+            <div class="card border-0 shadow-sm text-center">
+
+                <div class="card-body p-4">
+
+                    <div class="display-2 mb-3">
+                        👨‍⚕️
+                    </div>
+
+                    <h5 class="fw-bold">
+                        @Model.FullName
+                    </h5>
+
+                    <p class="text-primary mb-2">
+                        @Model.Specialization
+                    </p>
+
+                    <p class="text-muted">
+                        @Model.Qualification
+                    </p>
+
+                    <span class="badge bg-success">
+                        Active
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

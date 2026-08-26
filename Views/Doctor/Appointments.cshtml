@@ -1,0 +1,86 @@
+﻿@model List<ClinicManagementSystem.ViewModels.DoctorAppointmentViewModel>
+
+@{
+    ViewData["Title"] = "My Appointments";
+}
+
+<div class="container py-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+    <h3 class="mb-4">My Appointments</h3>
+
+    <div class="card">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Patient ID</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.PatientName</td>
+                        <td>@item.PatientCode</td>
+                        <td>@item.AppointmentDate.ToString("dd MMM yyyy")</td>
+                        <td>@item.AppointmentTime</td>
+                        <td>@item.Reason</td>
+                        <td>
+                            @if (item.Status == "Confirmed")
+                            {
+                                <span class="badge bg-success">Confirmed</span>
+                            }
+                            else if (item.Status == "Rejected")
+                            {
+                                <span class="badge bg-danger">Rejected</span>
+                            }
+                            else if (item.Status == "Completed")
+                            {
+                                <span class="badge bg-primary">Completed</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="PatientDetails" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">View</a>
+                            @if (item.Status == "Pending")
+                            {
+                                <form asp-action="AcceptAppointment" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                                </form>
+                                <form asp-action="RejectAppointment" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+                            }
+                            else if (item.Status == "Confirmed")
+                            {
+                                <form asp-action="CompleteAppointment" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-primary">Mark Complete</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

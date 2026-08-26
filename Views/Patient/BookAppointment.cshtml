@@ -1,0 +1,196 @@
+﻿@model ClinicManagementSystem.ViewModels.AppointmentViewModel
+
+@{
+    ViewData["Title"] = "Book Appointment";
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h2 class="fw-bold">Book Appointment</h2>
+
+        <p class="text-muted">
+            Select your preferred date and time.
+        </p>
+    </div>
+
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4 p-md-5">
+
+                    <!-- Doctor Information -->
+
+                    <div class="bg-light rounded p-3 mb-4">
+
+                        <div class="d-flex align-items-center">
+
+                            <div class="fs-1 me-3">
+                                👨‍⚕️
+                            </div>
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    @Model.DoctorName
+                                </h5>
+
+                                <span class="text-primary">
+                                    @Model.Specialization
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <form asp-action="BookAppointment"
+                          asp-controller="Patient"
+                          method="post">
+
+                        <input asp-for="DoctorId"
+                               type="hidden" />
+
+                        <input asp-for="DoctorName"
+                               type="hidden" />
+
+                        <input asp-for="Specialization"
+                               type="hidden" />
+
+
+                        <!-- Date -->
+
+                        <div class="mb-3">
+
+                            <label asp-for="AppointmentDate"
+                                   class="form-label fw-semibold">
+                            </label>
+
+                            <input asp-for="AppointmentDate"
+                                   class="form-control"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+                            <span asp-validation-for="AppointmentDate"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Time -->
+
+                        <div class="mb-3">
+
+                            <label asp-for="AppointmentTime"
+                                   class="form-label fw-semibold">
+                            </label>
+
+                            <select asp-for="AppointmentTime"
+                                    class="form-select">
+
+                                <option value="">
+                                    Select a time
+                                </option>
+
+                                <option value="10:00 AM">
+                                    10:00 AM
+                                </option>
+
+                                <option value="10:30 AM">
+                                    10:30 AM
+                                </option>
+
+                                <option value="11:00 AM">
+                                    11:00 AM
+                                </option>
+
+                                <option value="11:30 AM">
+                                    11:30 AM
+                                </option>
+
+                                <option value="04:00 PM">
+                                    04:00 PM
+                                </option>
+
+                                <option value="04:30 PM">
+                                    04:30 PM
+                                </option>
+
+                                <option value="05:00 PM">
+                                    05:00 PM
+                                </option>
+
+                                <option value="05:30 PM">
+                                    05:30 PM
+                                </option>
+
+                            </select>
+
+                            <span asp-validation-for="AppointmentTime"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Reason -->
+
+                        <div class="mb-4">
+
+                            <label asp-for="Reason"
+                                   class="form-label fw-semibold">
+                            </label>
+
+                            <textarea asp-for="Reason"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Briefly describe the reason for your visit">
+                            </textarea>
+
+                            <span asp-validation-for="Reason"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Buttons -->
+
+                        <div class="d-flex gap-2">
+
+                            <a asp-action="Doctors"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-primary flex-grow-1">
+                                📅 Confirm Appointment
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

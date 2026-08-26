@@ -1,0 +1,81 @@
+﻿@model List<ClinicManagementSystem.ViewModels.ReceptionistBookingViewModel>
+
+@{
+    ViewData["Title"] = "Appointments";
+}
+
+<div class="container py-4">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <h3 class="mb-4">Appointments</h3>
+
+    <div class="card">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="7" class="text-center text-muted">No appointments booked yet.</td></tr>
+                }
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>@a.PatientName</td>
+                        <td>@a.DoctorName</td>
+                        <td>@a.AppointmentDate.ToString("dd MMM yyyy")</td>
+                        <td>@a.AppointmentTime</td>
+                        <td>@a.Reason</td>
+                        <td>
+                            @if (a.Status == "Confirmed")
+                            {
+                                <span class="badge bg-success">Confirmed</span>
+                            }
+                            else if (a.Status == "Cancelled")
+                            {
+                                <span class="badge bg-danger">Cancelled</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                        </td>
+                        <td>
+                            @if (a.Status == "Pending")
+                            {
+                                <form asp-action="ConfirmAppointment" asp-route-id="@a.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">Confirm</button>
+                                </form>
+                                <form asp-action="CancelAppointment" asp-route-id="@a.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

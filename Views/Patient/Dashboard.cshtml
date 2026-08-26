@@ -1,0 +1,304 @@
+﻿@{
+    ViewData["Title"] = "Patient Dashboard";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Welcome -->
+    <div class="mb-4">
+        <h2 class="fw-bold">Good Morning, Patient 👋</h2>
+        <p class="text-muted">
+            Welcome to your ClinicCare dashboard.
+        </p>
+    </div>
+
+
+    <!-- Statistics -->
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Upcoming Appointments
+                            </p>
+
+                            <h3 class="fw-bold">2</h3>
+                        </div>
+
+                        <div class="fs-2">
+                            📅
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Completed Visits
+                            </p>
+
+                            <h3 class="fw-bold">5</h3>
+                        </div>
+
+                        <div class="fs-2">
+                            ✅
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Available Doctors
+                            </p>
+
+                            <h3 class="fw-bold">12</h3>
+                        </div>
+
+                        <div class="fs-2">
+                            👨‍⚕️
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Pending
+                            </p>
+
+                            <h3 class="fw-bold">1</h3>
+                        </div>
+
+                        <div class="fs-2">
+                            ⏳
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Main Dashboard -->
+
+    <div class="row g-4">
+
+        <!-- Quick Actions -->
+
+        <div class="col-lg-4">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <h5 class="fw-bold">
+                        Quick Actions
+                    </h5>
+
+                </div>
+
+                <div class="card-body px-4">
+
+                    <div class="d-grid gap-3">
+
+                        <a href="#"
+                           class="btn btn-primary">
+                            📅 Book Appointment
+                        </a>
+
+                        <a asp-controller="Patient"
+                           asp-action="Doctors"
+                           class="btn btn-outline-primary">
+                            👨‍⚕️ Find a Doctor
+                        </a>
+
+                        <a asp-controller="Patient"
+                           asp-action="Profile"
+                           class="btn btn-outline-secondary">
+                            👤 My Profile
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Upcoming Appointment -->
+
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <div class="d-flex justify-content-between">
+
+                        <h5 class="fw-bold">
+                            Upcoming Appointments
+                        </h5>
+
+                        <a href="#"
+                           class="text-decoration-none">
+                            View All
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body px-4">
+
+                    <div class="table-responsive">
+
+                        <table class="table align-middle">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            Dr. Ahmed Rahman
+                                        </strong>
+
+                                        <br />
+
+                                        <small class="text-muted">
+                                            Cardiologist
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        28 Aug 2026
+                                    </td>
+
+                                    <td>
+                                        10:30 AM
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-success">
+                                            Confirmed
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            Dr. Nusrat Jahan
+                                        </strong>
+
+                                        <br />
+
+                                        <small class="text-muted">
+                                            General Physician
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        02 Sep 2026
+                                    </td>
+
+                                    <td>
+                                        04:00 PM
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

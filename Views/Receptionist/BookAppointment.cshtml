@@ -1,0 +1,83 @@
+﻿@model ClinicManagementSystem.ViewModels.ReceptionistBookingViewModel
+
+@{
+    ViewData["Title"] = "Book Appointment";
+    var patients = ViewBag.Patients as List<ClinicManagementSystem.ViewModels.PatientListItemViewModel>;
+    var doctors = ViewBag.Doctors as List<(int Id, string Name)>;
+}
+
+<div class="container py-4">
+
+    <h3 class="mb-4">Book Appointment</h3>
+
+    <div class="card">
+        <div class="card-body">
+
+            <form asp-action="BookAppointment" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Patient</label>
+                    <select asp-for="PatientId" class="form-select">
+                        <option value="">-- Select Patient --</option>
+                        @foreach (var p in patients!)
+                        {
+                            <option value="@p.Id">@p.FullName (@p.PatientCode)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="PatientId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Doctor</label>
+                    <select asp-for="DoctorId" class="form-select">
+                        <option value="">-- Select Doctor --</option>
+                        @foreach (var d in doctors!)
+                        {
+                            <option value="@d.Id">@d.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="DoctorId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Appointment Date</label>
+                    <input asp-for="AppointmentDate" type="date" class="form-control" />
+                    <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Appointment Time</label>
+                    <select asp-for="AppointmentTime" class="form-select">
+                        <option value="">-- Select Time --</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="10:30 AM">10:30 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="04:00 PM">04:00 PM</option>
+                        <option value="04:30 PM">04:30 PM</option>
+                    </select>
+                    <span asp-validation-for="AppointmentTime" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Reason</label>
+                    <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Reason" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Book Appointment</button>
+                <a asp-action="Dashboard" class="btn btn-outline-secondary">Cancel</a>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

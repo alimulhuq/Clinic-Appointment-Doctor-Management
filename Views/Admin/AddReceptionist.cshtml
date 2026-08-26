@@ -1,0 +1,50 @@
+﻿@model ClinicManagementSystem.ViewModels.ReceptionistManagementViewModel
+
+@{
+    ViewData["Title"] = "Add Receptionist";
+}
+
+<div class="container py-4">
+
+    <h3 class="mb-4">Add Receptionist</h3>
+
+    <div class="card">
+        <div class="card-body">
+
+            <form asp-action="AddReceptionist" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Receptionist</button>
+                <a asp-action="Receptionists" class="btn btn-outline-secondary">Cancel</a>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

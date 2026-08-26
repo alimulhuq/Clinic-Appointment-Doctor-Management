@@ -1,0 +1,68 @@
+﻿@model ClinicManagementSystem.ViewModels.DoctorManagementViewModel
+
+@{
+    ViewData["Title"] = "Add Doctor";
+}
+
+<div class="container py-4">
+
+    <h3 class="mb-4">Add Doctor</h3>
+
+    <div class="card">
+        <div class="card-body">
+
+            <form asp-action="AddDoctor" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Specialization</label>
+                    <input asp-for="Specialization" class="form-control" />
+                    <span asp-validation-for="Specialization" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Qualification</label>
+                    <input asp-for="Qualification" class="form-control" />
+                    <span asp-validation-for="Qualification" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Experience (years)</label>
+                    <input asp-for="Experience" class="form-control" />
+                    <span asp-validation-for="Experience" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Doctor</button>
+                <a asp-action="Doctors" class="btn btn-outline-secondary">Cancel</a>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

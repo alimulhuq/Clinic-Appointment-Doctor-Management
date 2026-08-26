@@ -1,0 +1,249 @@
+﻿@model ClinicManagementSystem.ViewModels.PatientProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container py-4">
+
+    <!-- Page Header -->
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            My Profile
+        </h2>
+
+        <p class="text-muted">
+            View and update your personal information.
+        </p>
+
+    </div>
+
+
+    <!-- Success Message -->
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success">
+            @ViewBag.SuccessMessage
+        </div>
+    }
+
+
+    <div class="row">
+
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <form asp-action="Profile"
+                          asp-controller="Patient"
+                          method="post">
+
+                        <div class="row">
+
+                            <!-- Full Name -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="FullName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="FullName"
+                                       class="form-control" />
+
+                                <span asp-validation-for="FullName"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Email -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Email"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Email"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Email"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Phone -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Phone"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="Phone"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Phone"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- DOB -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="DateOfBirth"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="DateOfBirth"
+                                       class="form-control" />
+
+                                <span asp-validation-for="DateOfBirth"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Gender -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Gender"
+                                       class="form-label">
+                                </label>
+
+                                <select asp-for="Gender"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select Gender
+                                    </option>
+
+                                    <option value="Male">
+                                        Male
+                                    </option>
+
+                                    <option value="Female">
+                                        Female
+                                    </option>
+
+                                    <option value="Other">
+                                        Other
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="Gender"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Guardian -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="GuardianName"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="GuardianName"
+                                       class="form-control"
+                                       placeholder="Optional" />
+
+                            </div>
+
+
+                            <!-- Address -->
+
+                            <div class="col-12 mb-3">
+
+                                <label asp-for="Address"
+                                       class="form-label">
+                                </label>
+
+                                <textarea asp-for="Address"
+                                          class="form-control"
+                                          rows="3">
+                                </textarea>
+
+                                <span asp-validation-for="Address"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Save Button -->
+
+                        <button type="submit"
+                                class="btn btn-primary px-4">
+
+                            Save Changes
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Profile Summary -->
+
+        <div class="col-lg-4 mt-4 mt-lg-0">
+
+            <div class="card border-0 shadow-sm text-center">
+
+                <div class="card-body p-4">
+
+                    <div class="display-4 mb-3">
+                        👤
+                    </div>
+
+                    <h5 class="fw-bold">
+                        Patient Account
+                    </h5>
+
+                    <p class="text-muted">
+                        ClinicCare Patient
+                    </p>
+
+                    <span class="badge bg-success">
+                        Active
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

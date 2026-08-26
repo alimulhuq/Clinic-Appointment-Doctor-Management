@@ -1,8 +1,181 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- HERO -->
+<section class="bg-primary text-white py-5">
+    <div class="container py-4">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <h1 class="fw-bold display-5">Your Health, Our Priority</h1>
+                <p class="lead">Find the right doctor, check availability, and book your appointment easily.</p>
+                <a asp-controller="Patient" asp-action="Doctors" class="btn btn-light text-primary btn-lg px-4 me-2">Find a Doctor</a>
+                <a asp-controller="Patient" asp-action="Doctors" class="btn btn-outline-light btn-lg px-4">Book Appointment</a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <span style="font-size: 10rem;">🏥</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- QUICK APPOINTMENT SEARCH -->
+<section class="container">
+    <div class="card shadow-sm border-0" style="margin-top: -40px;">
+        <div class="card-body p-4">
+            <form class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Department</label>
+                    <select class="form-select">
+                        <option>General Medicine</option>
+                        <option>Cardiology</option>
+                        <option>Dermatology</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Doctor</label>
+                    <select class="form-select">
+                        <option>Any Doctor</option>
+                        <option>Dr. Ahmed Rahman</option>
+                        <option>Dr. Nusrat Jahan</option>
+                        <option>Dr. Tanvir Hasan</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary w-100">Check Availability</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- DEPARTMENTS -->
+<section class="container py-5">
+    <h2 class="fw-bold text-center mb-4">Medical Departments</h2>
+    <div class="row g-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 text-center border-0 shadow-sm p-3">
+                <div style="font-size: 2rem;">🫀</div>
+                <h6 class="fw-bold mt-2">Cardiology</h6>
+                <p class="text-muted small">Heart and vascular care</p>
+                <span class="badge bg-light text-dark">3 Doctors</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 text-center border-0 shadow-sm p-3">
+                <div style="font-size: 2rem;">🩺</div>
+                <h6 class="fw-bold mt-2">General Medicine</h6>
+                <p class="text-muted small">Everyday health concerns</p>
+                <span class="badge bg-light text-dark">2 Doctors</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 text-center border-0 shadow-sm p-3">
+                <div style="font-size: 2rem;">🧴</div>
+                <h6 class="fw-bold mt-2">Dermatology</h6>
+                <p class="text-muted small">Skin, hair and nails</p>
+                <span class="badge bg-light text-dark">1 Doctor</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 text-center border-0 shadow-sm p-3">
+                <div style="font-size: 2rem;">🦴</div>
+                <h6 class="fw-bold mt-2">Orthopedics</h6>
+                <p class="text-muted small">Bones and joints</p>
+                <span class="badge bg-light text-dark">Coming Soon</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURED DOCTORS -->
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="fw-bold text-center mb-4">Featured Doctors</h2>
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-0">Dr. Ahmed Rahman</h5>
+                        <p class="text-muted mb-1">Cardiologist</p>
+                        <p class="small mb-1">MBBS, MD &middot; 10 years experience</p>
+                        <span class="badge bg-success mb-2">Available Today</span>
+                        <div class="d-flex gap-2 mt-2">
+                            <a asp-controller="Patient" asp-action="DoctorDetails" asp-route-id="1" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-0">Dr. Nusrat Jahan</h5>
+                        <p class="text-muted mb-1">General Physician</p>
+                        <p class="small mb-1">MBBS, FCPS &middot; 7 years experience</p>
+                        <span class="badge bg-warning text-dark mb-2">Available Tomorrow</span>
+                        <div class="d-flex gap-2 mt-2">
+                            <a asp-controller="Patient" asp-action="DoctorDetails" asp-route-id="2" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-0">Dr. Tanvir Hasan</h5>
+                        <p class="text-muted mb-1">Dermatologist</p>
+                        <p class="small mb-1">MBBS, DDV &middot; 8 years experience</p>
+                        <span class="badge bg-success mb-2">Available Today</span>
+                        <div class="d-flex gap-2 mt-2">
+                            <a asp-controller="Patient" asp-action="DoctorDetails" asp-route-id="3" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="container py-5">
+    <h2 class="fw-bold text-center mb-5">How It Works</h2>
+    <div class="row text-center g-4">
+        <div class="col-md-3">
+            <div style="font-size: 2rem;">🔍</div>
+            <h6 class="fw-bold mt-2">1. Find a Doctor</h6>
+            <p class="text-muted small">Browse by specialization</p>
+        </div>
+        <div class="col-md-3">
+            <div style="font-size: 2rem;">📅</div>
+            <h6 class="fw-bold mt-2">2. Check Availability</h6>
+            <p class="text-muted small">See open time slots</p>
+        </div>
+        <div class="col-md-3">
+            <div style="font-size: 2rem;">✅</div>
+            <h6 class="fw-bold mt-2">3. Book Appointment</h6>
+            <p class="text-muted small">Confirm in seconds</p>
+        </div>
+        <div class="col-md-3">
+            <div style="font-size: 2rem;">🩺</div>
+            <h6 class="fw-bold mt-2">4. Meet Your Doctor</h6>
+            <p class="text-muted small">Get the care you need</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h2 class="fw-bold">Need to See a Doctor?</h2>
+        <p class="lead">Book your appointment quickly and get the care you need.</p>
+        <a asp-controller="Patient" asp-action="Doctors" class="btn btn-light text-primary btn-lg px-4">Book an Appointment</a>
+    </div>
+</section>
