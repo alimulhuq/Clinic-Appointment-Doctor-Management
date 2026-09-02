@@ -1,104 +1,175 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Clinic_Application_Doctor_Management.Data;
+using Clinic_Application_Doctor_Management.Models;
+using Clinic_Application_Doctor_Management.Services.Interfaces;
 using ClinicManagementSystem.ViewModels;
-using System.Linq;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace ClinicManagementSystem.Controllers
-{
-    public class AdminController : Controller
-    {
-        private static List<DoctorManagementViewModel> doctors = new List<DoctorManagementViewModel>
-        {
-            new DoctorManagementViewModel { Id = 1, FullName = "Dr. Ahmed Rahman", Email = "ahmed@cliniccare.com", Phone = "01700000001", Specialization = "Cardiologist", Qualification = "MBBS, MD", Experience = 10 },
-            new DoctorManagementViewModel { Id = 2, FullName = "Dr. Nusrat Jahan", Email = "nusrat@cliniccare.com", Phone = "01700000002", Specialization = "General Physician", Qualification = "MBBS, FCPS", Experience = 7 },
-            new DoctorManagementViewModel { Id = 3, FullName = "Dr. Tanvir Hasan", Email = "tanvir@cliniccare.com", Phone = "01700000003", Specialization = "Dermatologist", Qualification = "MBBS, DDV", Experience = 8 }
-        };
-        private static List<ReceptionistManagementViewModel> receptionists = new List<ReceptionistManagementViewModel>
-{
-    new ReceptionistManagementViewModel { Id = 1, FullName = "Sadia Islam", Email = "sadia@cliniccare.com", Phone = "01799999999" }
-};
-        private static List<PatientListItemViewModel> patients = new List<PatientListItemViewModel>
-{
-    new PatientListItemViewModel { Id = 1, FullName = "Rahim Ahmed", PatientCode = "P001", Phone = "01711111111", Age = 34, Gender = "Male" },
-    new PatientListItemViewModel { Id = 2, FullName = "Karim Hasan", PatientCode = "P002", Phone = "01722222222", Age = 28, Gender = "Male" },
-    new PatientListItemViewModel { Id = 3, FullName = "Nusrat Akter", PatientCode = "P003", Phone = "01733333333", Age = 41, Gender = "Female" }
-};
-        // GET: /Admin/Dashboard
-        public IActionResult Dashboard()
-        {
-            var model = new AdminDashboardViewModel
-            {
-                TotalDoctors = 3,
-                TotalReceptionists = 1,
-                TotalPatients = 4,
-                TotalAppointments = 6
+namespace ClinicManagementSystem.Controllers{
+    [Authorize(Roles = "Admin")]
+    public class AdminController : Controller{
+        private readonly ApplicationDbContext _context;
+        private readonly IAuditService _audit;
+
+        public AdminController(ApplicationDbContext context, IAuditService audit){
+            _context = context;
+            _audit = audit;
+        }
+
+        public async Task<IActionResult> Dashboard(){
+            var model = new AdminDashboardViewModel{
+                TotalDoctors = await _context.Doctors.CountAsync(),
+                TotalPatients = await _context.Patients.CountAsync(),
+                TotalAppointments = await _context.Appointments.CountAsync(),
+                TotalReceptionists = await _context.Users.CountAsync(u => u.Role == "Receptionist")
             };
-
             return View(model);
         }
 
-        // GET: /Admin/Doctors
-        public IActionResult Doctors()
-        {
-            return View(doctors);
+        // Doctors management (CRUD)
+        public async Task<IActionResult> Doctors(){
+            var doctors = await _context.Doctors.ToListAsync();
+            var viewModels = doctors.Select(d => new DoctorManagementViewModel{
+                Id = d.Id,
+                FullName = d.Name,
+                Email = d.Email,
+                Phone = d.Phone,
+                Specialization = d.Specialization,
+                Qualification = d.Qualification,
+                Experience = d.Experience
+            }).ToList();
+            return View(viewModels);
         }
 
-        // GET: /Admin/AddDoctor
-        public IActionResult AddDoctor()
-        {
-            return View(new DoctorManagementViewModel());
-        }
+        public IActionResult AddDoctor() => View(new DoctorManagementViewModel());
 
-        // POST: /Admin/AddDoctor
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddDoctor(DoctorManagementViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+        public async Task<IActionResult> AddDoctor(DoctorManagementViewModel model){
+            if (!ModelState.IsValid) return View(model);
 
-            model.Id = doctors.Count + 1;
-            doctors.Add(model);
+            var doctor = new Doctor{
+                Name = model.FullName,
+                Email = model.Email,
+                Phone = model.Phone,
+                Specialization = model.Specialization,
+                Qualification = model.Qualification,
+                Experience = model.Experience
+            };
+            _context.Doctors.Add(doctor);
+            await _context.SaveChangesAsync();
+
+            await _audit.LogAsync("Create", "Doctor", doctor.Id, $"Doctor {doctor.Name} added");
 
             TempData["SuccessMessage"] = $"Doctor {model.FullName} added successfully.";
-
             return RedirectToAction("Doctors");
         }
-        // GET: /Admin/Receptionists
-        public IActionResult Receptionists()
-        {
-            return View(receptionists);
+
+        public async Task<IActionResult> EditDoctor(int id){
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null) return NotFound();
+
+            var model = new DoctorManagementViewModel{
+                Id = doctor.Id,
+                FullName = doctor.Name,
+                Email = doctor.Email,
+                Phone = doctor.Phone,
+                Specialization = doctor.Specialization,
+                Qualification = doctor.Qualification,
+                Experience = doctor.Experience
+            };
+            return View(model);
         }
 
-        // GET: /Admin/AddReceptionist
-        public IActionResult AddReceptionist()
-        {
-            return View(new ReceptionistManagementViewModel());
-        }
-
-        // POST: /Admin/AddReceptionist
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddReceptionist(ReceptionistManagementViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
+        public async Task<IActionResult> EditDoctor(DoctorManagementViewModel model){
+            if (!ModelState.IsValid) return View(model);
+
+            var doctor = await _context.Doctors.FindAsync(model.Id);
+            if (doctor == null) return NotFound();
+
+            doctor.Name = model.FullName;
+            doctor.Email = model.Email;
+            doctor.Phone = model.Phone;
+            doctor.Specialization = model.Specialization;
+            doctor.Qualification = model.Qualification;
+            doctor.Experience = model.Experience;
+
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("Update", "Doctor", doctor.Id, $"Doctor {doctor.Name} updated");
+
+            TempData["SuccessMessage"] = $"Doctor {model.FullName} updated.";
+            return RedirectToAction("Doctors");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteDoctor(int id){
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor != null){
+                _context.Doctors.Remove(doctor);
+                await _context.SaveChangesAsync();
+                await _audit.LogAsync("Delete", "Doctor", id, $"Doctor {doctor.Name} deleted");
+                TempData["SuccessMessage"] = "Doctor deleted.";
             }
+            return RedirectToAction("Doctors");
+        }
 
-            model.Id = receptionists.Count + 1;
-            receptionists.Add(model);
+        // Receptionists management (similar pattern)
+        public async Task<IActionResult> Receptionists(){
+            var users = await _context.Users.Where(u => u.Role == "Receptionist").ToListAsync();
+            var viewModels = users.Select(u => new ReceptionistManagementViewModel{
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                Phone = u.Phone
+            }).ToList();
+            return View(viewModels);
+        }
 
-            TempData["SuccessMessage"] = $"Receptionist {model.FullName} added successfully.";
+        public IActionResult AddReceptionist() => View(new ReceptionistManagementViewModel());
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReceptionist(ReceptionistManagementViewModel model){
+            if (!ModelState.IsValid) return View(model);
+
+            var user = new User{
+                FullName = model.FullName,
+                Email = model.Email,
+                Phone = model.Phone,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("DefaultPassword123!"),
+                Role = "Receptionist"
+            };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            await _audit.LogAsync("Create", "Receptionist", user.Id, $"Receptionist {user.FullName} added");
+
+            TempData["SuccessMessage"] = $"Receptionist {model.FullName} added.";
             return RedirectToAction("Receptionists");
         }
-        // GET: /Admin/Patients
-        public IActionResult Patients()
-        {
-            return View(patients);
+
+        // Patients list (read-only for admin)
+        public async Task<IActionResult> Patients(){
+            var patients = await _context.Patients.ToListAsync();
+            var viewModels = patients.Select(p => new PatientListItemViewModel{
+                Id = p.Id,
+                FullName = p.FullName,
+                PatientCode = $"P{p.Id:D3}",
+                Phone = p.Phone,
+                Age = p.Age,
+                Gender = p.Gender
+            }).ToList();
+            return View(viewModels);
+        }
+
+        // Audit Logs
+        public async Task<IActionResult> AuditLogs(){
+            var logs = await _context.AuditLogs.OrderByDescending(l => l.Timestamp).Take(200).ToListAsync();
+            return View(logs);
         }
     }
 }

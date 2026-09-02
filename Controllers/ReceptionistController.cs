@@ -1,192 +1,248 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Clinic_Application_Doctor_Management.Data;
+using Clinic_Application_Doctor_Management.Models;
+using Clinic_Application_Doctor_Management.Services.Interfaces;
 using ClinicManagementSystem.ViewModels;
-using System.Linq;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 namespace ClinicManagementSystem.Controllers
 {
+    [Authorize(Roles = "Receptionist")]
     public class ReceptionistController : Controller
     {
-        // GET: /Receptionist/Dashboard
-        public IActionResult Dashboard()
+        private readonly ApplicationDbContext _context;
+        private readonly IAuditService _audit;
+
+        public ReceptionistController(ApplicationDbContext context, IAuditService audit)
         {
+            _context = context;
+            _audit = audit;
+        }
+
+        public async Task<IActionResult> Dashboard()
+        {
+            var today = DateTime.Today;
             var model = new ReceptionistDashboardViewModel
             {
-                TodaysAppointments = 12,
-                TotalPatients = 340,
-                PendingConfirmations = 4
+                TodaysAppointments = await _context.Appointments.CountAsync(a => a.AppointmentDate.Date == today),
+                TotalPatients = await _context.Patients.CountAsync(),
+                PendingConfirmations = await _context.Appointments.CountAsync(a => a.Status == "Pending")
             };
-
             return View(model);
         }
-        private static List<PatientListItemViewModel> patients = new List<PatientListItemViewModel>
-{
-    new PatientListItemViewModel { Id = 1, FullName = "Rahim Ahmed", PatientCode = "P001", Phone = "01711111111", Age = 34, Gender = "Male" },
-    new PatientListItemViewModel { Id = 2, FullName = "Karim Hasan", PatientCode = "P002", Phone = "01722222222", Age = 28, Gender = "Male" },
-    new PatientListItemViewModel { Id = 3, FullName = "Nusrat Akter", PatientCode = "P003", Phone = "01733333333", Age = 41, Gender = "Female" }
-};
-        private static List<(int Id, string Name)> doctorList = new List<(int, string)>
-{
-    (1, "Dr. Ahmed Rahman - Cardiologist"),
-    (2, "Dr. Nusrat Jahan - General Physician"),
-    (3, "Dr. Tanvir Hasan - Dermatologist")
-};
 
-        private static List<ReceptionistBookingViewModel> bookedAppointments = new List<ReceptionistBookingViewModel>();
-
-        // GET: /Receptionist/BookAppointment
-        public IActionResult BookAppointment()
+        [HttpGet]
+        public async Task<IActionResult> BookAppointment()
         {
-            ViewBag.Patients = patients;
-            ViewBag.Doctors = doctorList;
+            ViewBag.Patients = await _context.Patients.ToListAsync();
+            ViewBag.Doctors = await _context.Doctors.ToListAsync();
             return View(new ReceptionistBookingViewModel());
         }
 
-        // POST: /Receptionist/BookAppointment
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult BookAppointment(ReceptionistBookingViewModel model)
+        public async Task<IActionResult> BookAppointment(ReceptionistBookingViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Patients = patients;
-                ViewBag.Doctors = doctorList;
+                ViewBag.Patients = await _context.Patients.ToListAsync();
+                ViewBag.Doctors = await _context.Doctors.ToListAsync();
                 return View(model);
             }
 
-            model.Id = bookedAppointments.Count + 1;
-            model.PatientName = patients.FirstOrDefault(p => p.Id == model.PatientId)?.FullName ?? "Unknown";
-            model.DoctorName = doctorList.FirstOrDefault(d => d.Id == model.DoctorId).Name ?? "Unknown";
-            model.Status = "Pending";
+            // Check conflict
+            var conflicting = await _context.Appointments
+                .AnyAsync(a => a.DoctorId == model.DoctorId
+                               && a.AppointmentDate == model.AppointmentDate
+                               && a.AppointmentTime == TimeSpan.Parse(model.AppointmentTime)
+                               && a.Status != "Cancelled");
+            if (conflicting)
+            {
+                ModelState.AddModelError("", "This time slot is already booked.");
+                ViewBag.Patients = await _context.Patients.ToListAsync();
+                ViewBag.Doctors = await _context.Doctors.ToListAsync();
+                return View(model);
+            }
 
-            bookedAppointments.Add(model);
+            var appointment = new Appointment
+            {
+                DoctorId = model.DoctorId,
+                PatientId = model.PatientId,
+                AppointmentDate = model.AppointmentDate,
+                AppointmentTime = TimeSpan.Parse(model.AppointmentTime),
+                Reason = model.Reason,
+                Status = "Pending",
+                CreatedAt = DateTime.Now
+            };
+            _context.Appointments.Add(appointment);
+            await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"Appointment booked for {model.PatientName}.";
+            await _audit.LogAsync("Create", "Appointment", appointment.Id, $"Booked by receptionist");
 
+            TempData["SuccessMessage"] = $"Appointment booked for patient ID {model.PatientId}.";
             return RedirectToAction("Dashboard");
         }
-        // GET: /Receptionist/Appointments
-        public IActionResult Appointments()
+
+        public async Task<IActionResult> Appointments(DateTime? date, string status)
         {
-            return View(bookedAppointments);
+            var query = _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .AsQueryable();
+
+            if (date.HasValue)
+                query = query.Where(a => a.AppointmentDate.Date == date.Value.Date);
+            if (!string.IsNullOrEmpty(status))
+                query = query.Where(a => a.Status == status);
+
+            var appointments = await query.OrderBy(a => a.AppointmentDate).ThenBy(a => a.AppointmentTime).ToListAsync();
+
+            var viewModels = appointments.Select(a => new ReceptionistBookingViewModel
+            {
+                Id = a.Id,
+                PatientId = a.PatientId,
+                PatientName = a.Patient?.FullName ?? "Unknown",
+                DoctorId = a.DoctorId,
+                DoctorName = a.Doctor?.Name ?? "Unknown",
+                AppointmentDate = a.AppointmentDate,
+                AppointmentTime = a.AppointmentTime.ToString(@"hh\:mm tt"),
+                Reason = a.Reason ?? "",
+                Status = a.Status
+            }).ToList();
+
+            ViewBag.FilterDate = date;
+            ViewBag.FilterStatus = status;
+            return View(viewModels);
         }
 
-        // POST: /Receptionist/ConfirmAppointment/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ConfirmAppointment(int id)
+        public async Task<IActionResult> ConfirmAppointment(int id)
         {
-            var appointment = bookedAppointments.FirstOrDefault(a => a.Id == id);
-
+            var appointment = await _context.Appointments.Include(a => a.Patient).FirstOrDefaultAsync(a => a.Id == id);
             if (appointment == null)
             {
                 TempData["ErrorMessage"] = "Appointment not found.";
                 return RedirectToAction("Appointments");
             }
-
             appointment.Status = "Confirmed";
-            TempData["SuccessMessage"] = $"Appointment for {appointment.PatientName} confirmed.";
+            await _context.SaveChangesAsync();
 
+            await _audit.LogAsync("Update", "Appointment", id, $"Confirmed by receptionist");
+
+            TempData["SuccessMessage"] = $"Appointment for {appointment.Patient?.FullName} confirmed.";
             return RedirectToAction("Appointments");
         }
 
-        // POST: /Receptionist/CancelAppointment/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CancelAppointment(int id)
+        public async Task<IActionResult> CancelAppointment(int id)
         {
-            var appointment = bookedAppointments.FirstOrDefault(a => a.Id == id);
-
+            var appointment = await _context.Appointments.Include(a => a.Patient).FirstOrDefaultAsync(a => a.Id == id);
             if (appointment == null)
             {
                 TempData["ErrorMessage"] = "Appointment not found.";
                 return RedirectToAction("Appointments");
             }
-
             appointment.Status = "Cancelled";
-            TempData["SuccessMessage"] = $"Appointment for {appointment.PatientName} cancelled.";
+            await _context.SaveChangesAsync();
 
+            await _audit.LogAsync("Update", "Appointment", id, $"Cancelled by receptionist");
+
+            TempData["SuccessMessage"] = $"Appointment for {appointment.Patient?.FullName} cancelled.";
             return RedirectToAction("Appointments");
         }
-        // GET: /Receptionist/Patients
-        public IActionResult Patients(string? search)
-        {
-            var result = patients.AsEnumerable();
 
+        public async Task<IActionResult> Patients(string search, int? page)
+        {
+            var query = _context.Patients.AsQueryable();
             if (!string.IsNullOrWhiteSpace(search))
             {
-                result = result.Where(p =>
-                    p.FullName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                    p.PatientCode.Contains(search, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.FullName.Contains(search)
+                                         || p.Phone.Contains(search)
+                                         || (p.Email != null && p.Email.Contains(search)));
             }
+
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+            var patients = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            var viewModels = patients.Select(p => new PatientListItemViewModel
+            {
+                Id = p.Id,
+                FullName = p.FullName,
+                PatientCode = $"P{p.Id:D3}",
+                Phone = p.Phone,
+                Age = p.Age,
+                Gender = p.Gender
+            }).ToList();
 
             ViewBag.Search = search;
+            ViewBag.Page = pageNumber;
+            ViewBag.TotalPages = (int)Math.Ceiling(await query.CountAsync() / (double)pageSize);
 
-            return View(result.ToList());
-        }
-        // GET: /Receptionist/AddPatient
-        public IActionResult AddPatient()
-        {
-            return View(new PatientListItemViewModel());
+            return View(viewModels);
         }
 
-        // POST: /Receptionist/AddPatient
+        public IActionResult AddPatient() => View(new PatientListItemViewModel());
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddPatient(PatientListItemViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+        public async Task<IActionResult> AddPatient(PatientListItemViewModel model){
+            if (!ModelState.IsValid) return View(model);
 
-            model.Id = patients.Count + 1;
-            model.PatientCode = $"P{model.Id:000}";
+            var patient = new Patient{
+                FullName = model.FullName,
+                Phone = model.Phone,
+                Age = model.Age,
+                Gender = model.Gender,
+                CreatedAt = DateTime.Now
+            };
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
 
-            patients.Add(model);
+            await _audit.LogAsync("Create", "Patient", patient.Id, $"Patient {patient.FullName} added");
 
             TempData["SuccessMessage"] = $"Patient {model.FullName} added successfully.";
-
             return RedirectToAction("Patients");
         }
-        // GET: /Receptionist/EditPatient/2
-        public IActionResult EditPatient(int id)
-        {
-            var patient = patients.FirstOrDefault(p => p.Id == id);
 
-            if (patient == null)
-            {
+        public async Task<IActionResult> EditPatient(int id){
+            var patient = await _context.Patients.FindAsync(id);
+            if (patient == null){
                 TempData["ErrorMessage"] = "Patient not found.";
                 return RedirectToAction("Patients");
             }
-
-            return View(patient);
+            var model = new PatientListItemViewModel{
+                Id = patient.Id,
+                FullName = patient.FullName,
+                Phone = patient.Phone,
+                Age = patient.Age,
+                Gender = patient.Gender
+            };
+            return View(model);
         }
 
-        // POST: /Receptionist/EditPatient/2
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditPatient(PatientListItemViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+        public async Task<IActionResult> EditPatient(PatientListItemViewModel model){
+            if (!ModelState.IsValid) return View(model);
 
-            var patient = patients.FirstOrDefault(p => p.Id == model.Id);
-
-            if (patient == null)
-            {
+            var patient = await _context.Patients.FindAsync(model.Id);
+            if (patient == null){
                 TempData["ErrorMessage"] = "Patient not found.";
                 return RedirectToAction("Patients");
             }
-
             patient.FullName = model.FullName;
             patient.Phone = model.Phone;
             patient.Age = model.Age;
             patient.Gender = model.Gender;
+            await _context.SaveChangesAsync();
+
+            await _audit.LogAsync("Update", "Patient", patient.Id, $"Patient {patient.FullName} updated");
 
             TempData["SuccessMessage"] = $"Patient {patient.FullName} updated successfully.";
-
             return RedirectToAction("Patients");
         }
     }

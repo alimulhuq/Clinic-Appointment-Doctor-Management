@@ -1,0 +1,35 @@
+@model IEnumerable<Clinic_Application_Doctor_Management.Models.Prescription>
+
+@{
+    ViewData["Title"] = "My Prescriptions";
+}
+
+<h2>My Prescriptions</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Doctor</th>
+            <th>Date</th>
+            <th>Medicines</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Doctor?.Name</td>
+                <td>@p.PrescriptionDate.ToShortDateString()</td>
+                <td>
+                    <ul>
+                        @foreach (var item in p.Items)
+                        {
+                            <li>@item.MedicineName - @item.Dosage (@item.Frequency) for @item.Duration</li>
+                        }
+                    </ul>
+                </td>
+                <td>@p.Notes</td>
+            </tr>
+        }
+    </tbody>
+</table>

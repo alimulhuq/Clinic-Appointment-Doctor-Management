@@ -1,0 +1,32 @@
+@model IEnumerable<Clinic_Application_Doctor_Management.Models.Prescription>
+
+@{
+    ViewData["Title"] = "Prescriptions";
+}
+
+<h2>My Prescriptions</h2>
+<a asp-action="CreatePrescription" class="btn btn-primary mb-3">Create Prescription</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Medicines</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Patient?.FullName</td>
+                <td>@p.PrescriptionDate.ToShortDateString()</td>
+                <td>
+                    @string.Join(", ", p.Items.Select(i => $"{i.MedicineName} ({i.Dosage})"))
+                </td>
+                <td>@p.Notes</td>
+            </tr>
+        }
+    </tbody>
+</table>

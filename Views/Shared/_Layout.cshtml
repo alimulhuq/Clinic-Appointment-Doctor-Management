@@ -3,48 +3,185 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Clinic_Appointment_Doctor_Management</title>
-    <script type="importmap"></script>
+
+    <title>@ViewData["Title"] - Clinic Management System</title>
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Our CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Clinic_Appointment_Doctor_Management.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/ClinicManagementSystem.styles.css"
+          asp-append-version="true" />
 </head>
+
 <body>
+
+    <!-- ================= NAVBAR ================= -->
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Clinic_Appointment_Doctor_Management</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+
+            <div class="container">
+
+                <!-- Logo / Website Name -->
+                <a class="navbar-brand fw-bold"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    🏥 ClinicCare
+                </a>
+
+                <!-- Mobile Menu Button -->
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+
                     <span class="navbar-toggler-icon"></span>
+
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <!-- Navigation -->
+                <div class="collapse navbar-collapse" id="mainNavbar">
+
+                    <ul class="navbar-nav ms-auto">
+
+                        <!-- Home -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link"
+                               asp-controller="Home"
+                               asp-action="Index">
+                                Home
+                            </a>
                         </li>
+
+                        <!-- Doctors -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link"
+                               href="#">
+                                Doctors
+                            </a>
                         </li>
+
+                        <!-- About -->
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="#">
+                                About
+                            </a>
+                        </li>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item ms-lg-2">
+                                <a class="btn btn-light text-primary px-4"
+                                   asp-controller="Account"
+                                   asp-action="Logout">
+                                    Logout
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item ms-lg-2">
+                                <a class="btn btn-light text-primary px-4"
+                                   asp-controller="Account"
+                                   asp-action="Login">
+                                    Login
+                                </a>
+                            </li>
+                        }
+
                     </ul>
+
                 </div>
+
             </div>
+
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Clinic_Appointment_Doctor_Management - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main>
+        @RenderBody()
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="bg-dark text-light mt-5">
+
+        <div class="container py-4">
+
+            <div class="row">
+
+                <!-- Clinic Information -->
+                <div class="col-md-6">
+
+                    <h5>🏥 ClinicCare</h5>
+
+                    <p class="text-light">
+                        Simple and reliable clinic management
+                        for patients, doctors and staff.
+                    </p>
+
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-md-6 text-md-end">
+
+                    <p class="mb-1">
+                        Quick Links
+                    </p>
+
+                    <a href="#"
+                       class="text-light me-3">
+                        Doctors
+                    </a>
+
+                    <a href="#"
+                       class="text-light">
+                        About
+                    </a>
+
+                </div>
+
+            </div>
+
+            <hr />
+
+            <!-- Copyright -->
+            <div class="text-center">
+
+                <small>
+                    &copy; 2026 ClinicCare.
+                    All Rights Reserved.
+                </small>
+
+            </div>
+
         </div>
+
     </footer>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

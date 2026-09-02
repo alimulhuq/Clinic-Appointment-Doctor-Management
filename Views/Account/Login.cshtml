@@ -29,8 +29,18 @@
                     </div>
 
 
+                    @if (ViewBag.InfoMessage != null)
+                    {
+                        <div class="alert alert-info">@ViewBag.InfoMessage</div>
+                    }
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
+
                     <form asp-action="Login"
                           asp-controller="Account"
+                          asp-route-returnUrl="@ViewBag.ReturnUrl"
                           method="post">
 
                         <!-- Email -->

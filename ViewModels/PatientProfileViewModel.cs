@@ -1,23 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagementSystem.ViewModels
-{
-    public class PatientProfileViewModel
-    {
+namespace ClinicManagementSystem.ViewModels{
+    public class PatientProfileViewModel{
         [Required]
         [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [Phone]
+        [Required, Phone]
         public string Phone { get; set; } = string.Empty;
 
-        [Required]
-        [DataType(DataType.Date)]
+        [Required, DataType(DataType.Date)]
         [Display(Name = "Date of Birth")]
         public DateTime DateOfBirth { get; set; }
 
@@ -29,5 +25,19 @@ namespace ClinicManagementSystem.ViewModels
 
         [Required]
         public string Address { get; set; } = string.Empty;
+
+        [Display(Name = "Medical History")]
+        public string? MedicalHistory { get; set; }
+
+        public string? Allergies { get; set; }
+
+        [Display(Name = "Blood Group")]
+        public string? BloodGroup { get; set; }
+
+        [Display(Name = "Emergency Contact")]
+        public string? EmergencyContact { get; set; }
+
+        [Display(Name = "Emergency Contact Phone")]
+        public string? EmergencyContactPhone { get; set; }
     }
 }

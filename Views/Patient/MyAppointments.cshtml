@@ -1,0 +1,30 @@
+@model IEnumerable<Clinic_Application_Doctor_Management.Models.Appointment>
+
+@{
+    ViewData["Title"] = "My Appointments";
+}
+
+<h2>My Appointments</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Doctor</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Reason</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.Doctor?.Name</td>
+                <td>@a.AppointmentDate.ToShortDateString()</td>
+                <td>@a.AppointmentTime.ToString(@"hh\:mm")</td>
+                <td>@a.Reason</td>
+                <td>@a.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,80 @@
+@model ClinicManagementSystem.ViewModels.PrescriptionViewModel
+
+@{
+    ViewData["Title"] = "Create Prescription";
+}
+
+<h2>Create Prescription</h2>
+<form asp-action="CreatePrescription" method="post">
+    <input type="hidden" asp-for="DoctorId" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group mb-3">
+        <label asp-for="PatientId" class="control-label">Patient</label>
+        <select asp-for="PatientId" class="form-control" asp-items="ViewBag.Patients">
+            <option value="">Select Patient</option>
+        </select>
+        <span asp-validation-for="PatientId" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Notes" class="control-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+
+    <h4>Medicines</h4>
+    <div id="medicine-list">
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+            <div class="row medicine-item">
+                <div class="col-md-3">
+                    <input asp-for="Items[i].MedicineName" class="form-control" placeholder="Medicine Name" />
+                </div>
+                <div class="col-md-2">
+                    <input asp-for="Items[i].Dosage" class="form-control" placeholder="Dosage" />
+                </div>
+                <div class="col-md-2">
+                    <input asp-for="Items[i].Frequency" class="form-control" placeholder="Frequency" />
+                </div>
+                <div class="col-md-2">
+                    <input asp-for="Items[i].Duration" class="form-control" placeholder="Duration" />
+                </div>
+                <div class="col-md-2">
+                    <input asp-for="Items[i].Instructions" class="form-control" placeholder="Instructions" />
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger remove-medicine">X</button>
+                </div>
+            </div>
+        }
+    </div>
+    <button type="button" id="add-medicine" class="btn btn-secondary mb-3">Add Medicine</button>
+
+    <div class="form-group">
+        <input type="submit" value="Create Prescription" class="btn btn-success" />
+        <a asp-action="Prescriptions" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            var index = @Model.Items.Count;
+            $('#add-medicine').click(function () {
+                var html = `<div class="row medicine-item">
+                    <div class="col-md-3"><input name="Items[${index}].MedicineName" class="form-control" placeholder="Medicine Name" /></div>
+                    <div class="col-md-2"><input name="Items[${index}].Dosage" class="form-control" placeholder="Dosage" /></div>
+                    <div class="col-md-2"><input name="Items[${index}].Frequency" class="form-control" placeholder="Frequency" /></div>
+                    <div class="col-md-2"><input name="Items[${index}].Duration" class="form-control" placeholder="Duration" /></div>
+                    <div class="col-md-2"><input name="Items[${index}].Instructions" class="form-control" placeholder="Instructions" /></div>
+                    <div class="col-md-1"><button type="button" class="btn btn-danger remove-medicine">X</button></div>
+                </div>`;
+                $('#medicine-list').append(html);
+                index++;
+            });
+            $(document).on('click', '.remove-medicine', function () {
+                $(this).closest('.medicine-item').remove();
+            });
+        });
+    </script>
+}
