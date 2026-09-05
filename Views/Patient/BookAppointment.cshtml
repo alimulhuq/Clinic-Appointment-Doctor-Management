@@ -5,192 +5,168 @@
 }
 
 <div class="container py-4">
-
     <div class="mb-4">
         <h2 class="fw-bold">Book Appointment</h2>
-
-        <p class="text-muted">
-            Select your preferred date and time.
-        </p>
+        <p class="text-muted">Select your preferred date and time.</p>
     </div>
 
-
     <div class="row justify-content-center">
-
         <div class="col-lg-8">
-
             <div class="card border-0 shadow-sm">
-
                 <div class="card-body p-4 p-md-5">
 
                     <!-- Doctor Information -->
-
                     <div class="bg-light rounded p-3 mb-4">
-
                         <div class="d-flex align-items-center">
-
-                            <div class="fs-1 me-3">
-                                👨‍⚕️
-                            </div>
-
+                            <div class="fs-1 me-3">👨‍⚕️</div>
                             <div>
-
-                                <h5 class="fw-bold mb-1">
-                                    @Model.DoctorName
-                                </h5>
-
-                                <span class="text-primary">
-                                    @Model.Specialization
-                                </span>
-
+                                <h5 class="fw-bold mb-1">@Model.DoctorName</h5>
+                                <span class="text-primary">@Model.Specialization</span>
                             </div>
-
                         </div>
-
                     </div>
 
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
 
-                    <form asp-action="BookAppointment"
-                          asp-controller="Patient"
-                          method="post">
-
-                        <input asp-for="DoctorId"
-                               type="hidden" />
-
-                        <input asp-for="DoctorName"
-                               type="hidden" />
-
-                        <input asp-for="Specialization"
-                               type="hidden" />
-
+                    <form asp-action="BookAppointment" asp-controller="Patient" method="post" id="bookingForm">
+                        <input asp-for="DoctorId" type="hidden" />
+                        <input asp-for="DoctorName" type="hidden" />
+                        <input asp-for="Specialization" type="hidden" />
 
                         <!-- Date -->
-
                         <div class="mb-3">
-
-                            <label asp-for="AppointmentDate"
-                                   class="form-label fw-semibold">
-                            </label>
-
-                            <input asp-for="AppointmentDate"
-                                   class="form-control"
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-
-                            <span asp-validation-for="AppointmentDate"
-                                  class="text-danger">
-                            </span>
-
+                            <label asp-for="AppointmentDate" class="form-label fw-semibold">Appointment Date</label>
+                            <input asp-for="AppointmentDate" class="form-control" id="appointmentDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+                            <div id="dateError" class="text-danger small mt-1" style="display:none;"></div>
                         </div>
-
 
                         <!-- Time -->
-
                         <div class="mb-3">
-
-                            <label asp-for="AppointmentTime"
-                                   class="form-label fw-semibold">
-                            </label>
-
-                            <select asp-for="AppointmentTime"
-                                    class="form-select">
-
-                                <option value="">
-                                    Select a time
-                                </option>
-
-                                <option value="10:00 AM">
-                                    10:00 AM
-                                </option>
-
-                                <option value="10:30 AM">
-                                    10:30 AM
-                                </option>
-
-                                <option value="11:00 AM">
-                                    11:00 AM
-                                </option>
-
-                                <option value="11:30 AM">
-                                    11:30 AM
-                                </option>
-
-                                <option value="04:00 PM">
-                                    04:00 PM
-                                </option>
-
-                                <option value="04:30 PM">
-                                    04:30 PM
-                                </option>
-
-                                <option value="05:00 PM">
-                                    05:00 PM
-                                </option>
-
-                                <option value="05:30 PM">
-                                    05:30 PM
-                                </option>
-
+                            <label asp-for="AppointmentTime" class="form-label fw-semibold">Appointment Time</label>
+                            <select asp-for="AppointmentTime" class="form-select" id="appointmentTime">
+                                <option value="">Select a time</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="10:30 AM">10:30 AM</option>
+                                <option value="11:00 AM">11:00 AM</option>
+                                <option value="11:30 AM">11:30 AM</option>
+                                <option value="04:00 PM">04:00 PM</option>
+                                <option value="04:30 PM">04:30 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                                <option value="05:30 PM">05:30 PM</option>
                             </select>
-
-                            <span asp-validation-for="AppointmentTime"
-                                  class="text-danger">
-                            </span>
-
+                            <span asp-validation-for="AppointmentTime" class="text-danger"></span>
                         </div>
-
 
                         <!-- Reason -->
-
                         <div class="mb-4">
-
-                            <label asp-for="Reason"
-                                   class="form-label fw-semibold">
-                            </label>
-
-                            <textarea asp-for="Reason"
-                                      class="form-control"
-                                      rows="4"
-                                      placeholder="Briefly describe the reason for your visit">
-                            </textarea>
-
-                            <span asp-validation-for="Reason"
-                                  class="text-danger">
-                            </span>
-
+                            <label asp-for="Reason" class="form-label fw-semibold">Reason for Visit</label>
+                            <textarea asp-for="Reason" class="form-control" rows="4" placeholder="Briefly describe the reason for your visit"></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
                         </div>
-
 
                         <!-- Buttons -->
-
                         <div class="d-flex gap-2">
-
-                            <a asp-action="Doctors"
-                               class="btn btn-outline-secondary">
-                                Cancel
-                            </a>
-
-                            <button type="submit"
-                                    class="btn btn-primary flex-grow-1">
-                                📅 Confirm Appointment
-                            </button>
-
+                            <a asp-action="Doctors" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary flex-grow-1">Confirm Appointment</button>
                         </div>
-
                     </form>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
 
-
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const dateInput = document.getElementById('appointmentDate');
+            const timeSelect = document.getElementById('appointmentTime');
+            const errorDiv = document.getElementById('dateError');
+            const form = document.getElementById('bookingForm');
 
+            // Function to validate date and time combination
+            function validateDateTime() {
+                const selectedDate = new Date(dateInput.value);
+                const now = new Date();
+
+                // If no date selected, clear error
+                if (!dateInput.value) {
+                    clearError();
+                    return true;
+                }
+
+                // If selected date is today and time is past, block
+                if (selectedDate.toDateString() === now.toDateString()) {
+                    if (timeSelect.value) {
+                        const timeParts = timeSelect.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                        if (timeParts) {
+                            let hours = parseInt(timeParts[1]);
+                            const minutes = parseInt(timeParts[2]);
+                            const meridiem = timeParts[3].toUpperCase();
+                            if (meridiem === 'PM' && hours !== 12) hours += 12;
+                            if (meridiem === 'AM' && hours === 12) hours = 0;
+                            const selectedTime = new Date();
+                            selectedTime.setHours(hours, minutes, 0, 0);
+                            if (selectedTime < now) {
+                                showError('Please select a future time for today\'s appointment.');
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                // If date is in the past
+                if (selectedDate < now && selectedDate.toDateString() !== now.toDateString()) {
+                    showError('Please select a future date.');
+                    return false;
+                }
+
+                clearError();
+                return true;
+            }
+
+            function showError(message) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                dateInput.classList.add('is-invalid');
+                dateInput.style.cursor = 'not-allowed';
+            }
+
+            function clearError() {
+                errorDiv.textContent = '';
+                errorDiv.style.display = 'none';
+                dateInput.classList.remove('is-invalid');
+                dateInput.style.cursor = 'pointer';
+            }
+
+            // Event listeners
+            dateInput.addEventListener('change', validateDateTime);
+            timeSelect.addEventListener('change', validateDateTime);
+            form.addEventListener('submit', function (e) {
+                if (!validateDateTime()) {
+                    e.preventDefault();
+                }
+            });
+
+            // Initial check (if page loads with a pre-selected date)
+            validateDateTime();
+        })();
+    </script>
+    <style>
+        /* Visual cue when date is invalid */
+        #appointmentDate.is-invalid {
+            border-color: #dc3545;
+            cursor: not-allowed !important;
+            background-color: #f8d7da;
+        }
+        /* Optional: disable time select when date is past */
+        #appointmentTime:disabled {
+            cursor: not-allowed;
+        }
+    </style>
 }

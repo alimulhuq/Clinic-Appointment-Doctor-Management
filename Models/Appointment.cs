@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Clinic_Application_Doctor_Management.Models{
@@ -7,13 +8,11 @@ namespace Clinic_Application_Doctor_Management.Models{
         // Doctor relationship
         [Required]
         public int DoctorId { get; set; }
-
         public Doctor? Doctor { get; set; }
 
         // Patient relationship
         [Required]
         public int PatientId { get; set; }
-
         public Patient? Patient { get; set; }
 
         // Appointment information
@@ -30,6 +29,9 @@ namespace Clinic_Application_Doctor_Management.Models{
         [StringLength(30)]
         public string Status { get; set; } = "Pending";
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        // Optional: duration in minutes (default 30)
+        public int DurationMinutes { get; set; } = 30;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

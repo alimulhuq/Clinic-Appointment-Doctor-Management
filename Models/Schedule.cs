@@ -9,8 +9,8 @@ namespace Clinic_Application_Doctor_Management.Models{
         public int DoctorId { get; set; }
         public Doctor? Doctor { get; set; }
 
-        [Required, StringLength(20)]
-        public string Day { get; set; } = string.Empty;
+        [Required]
+        public DayOfWeek DayOfWeek { get; set; }
 
         [Required]
         public TimeSpan StartTime { get; set; }

@@ -9,9 +9,10 @@ using BCrypt.Net;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>{
+    .AddCookie(options => {
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
@@ -22,7 +23,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register services
+// Register other services
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddHttpContextAccessor();
@@ -53,7 +54,7 @@ using (var scope = app.Services.CreateScope()){
             Email = "admin@clinic.com",
             FullName = "System Administrator",
             Phone = "01700000000",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),   // fully qualified
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
             Role = "Admin"
         });
         db.SaveChanges();

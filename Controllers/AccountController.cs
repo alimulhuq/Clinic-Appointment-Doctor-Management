@@ -23,6 +23,16 @@ namespace Clinic_Application_Doctor_Management.Controllers
         [HttpGet]
         public IActionResult Login() => View();
 
+        public IActionResult MyProfile(){
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            return role switch{
+                "Admin" => RedirectToAction("Profile", "Admin"),
+                "Doctor" => RedirectToAction("Profile", "Doctor"),
+                "Receptionist" => RedirectToAction("Profile", "Receptionist"),
+                _ => RedirectToAction("Profile", "Patient")
+            };
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model){

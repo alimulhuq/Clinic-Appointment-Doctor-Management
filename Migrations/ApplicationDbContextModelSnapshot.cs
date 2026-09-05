@@ -42,6 +42,9 @@ namespace Clinic_Appointment_Doctor_Management.Migrations
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
@@ -56,9 +59,11 @@ namespace Clinic_Appointment_Doctor_Management.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DoctorId");
+                    b.HasIndex("DoctorId", "AppointmentDate", "AppointmentTime")
+                        .HasDatabaseName("IX_Appointment_Doctor_DateTime");
 
-                    b.HasIndex("PatientId");
+                    b.HasIndex("PatientId", "AppointmentDate", "AppointmentTime")
+                        .HasDatabaseName("IX_Appointment_Patient_DateTime");
 
                     b.ToTable("Appointments");
                 });
@@ -335,10 +340,8 @@ namespace Clinic_Appointment_Doctor_Management.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Day")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");

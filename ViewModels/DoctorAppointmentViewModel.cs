@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagementSystem.ViewModels
-{
-    public class DoctorAppointmentViewModel
-    {
+namespace ClinicManagementSystem.ViewModels{
+    public class DoctorAppointmentViewModel{
         [Required]
         public int Id { get; set; }
 
@@ -30,5 +29,13 @@ namespace ClinicManagementSystem.ViewModels
 
         [Required]
         public string Status { get; set; } = "Pending";
+
+        // Doctor's name for patient-side views
+        [Display(Name = "Doctor Name")]
+        public string DoctorName { get; set; } = string.Empty;
+
+        // Specialization for patient-side views
+        [Display(Name = "Specialization")]
+        public string Specialization { get; set; } = string.Empty;
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClinicManagementSystem.Controllers{
+namespace Clinic_Application_Doctor_Management.Controllers{
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller{
         private readonly ApplicationDbContext _context;
@@ -17,6 +17,7 @@ namespace ClinicManagementSystem.Controllers{
             _audit = audit;
         }
 
+        // ---------- DASHBOARD ----------
         public async Task<IActionResult> Dashboard(){
             var model = new AdminDashboardViewModel{
                 TotalDoctors = await _context.Doctors.CountAsync(),
@@ -27,7 +28,7 @@ namespace ClinicManagementSystem.Controllers{
             return View(model);
         }
 
-        // Doctors management (CRUD)
+        // ---------- DOCTORS MANAGEMENT ----------
         public async Task<IActionResult> Doctors(){
             var doctors = await _context.Doctors.ToListAsync();
             var viewModels = doctors.Select(d => new DoctorManagementViewModel{
@@ -47,7 +48,9 @@ namespace ClinicManagementSystem.Controllers{
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddDoctor(DoctorManagementViewModel model){
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid){
+                return View(model);
+            }
 
             var doctor = new Doctor{
                 Name = model.FullName,
@@ -59,9 +62,7 @@ namespace ClinicManagementSystem.Controllers{
             };
             _context.Doctors.Add(doctor);
             await _context.SaveChangesAsync();
-
             await _audit.LogAsync("Create", "Doctor", doctor.Id, $"Doctor {doctor.Name} added");
-
             TempData["SuccessMessage"] = $"Doctor {model.FullName} added successfully.";
             return RedirectToAction("Doctors");
         }
@@ -69,7 +70,6 @@ namespace ClinicManagementSystem.Controllers{
         public async Task<IActionResult> EditDoctor(int id){
             var doctor = await _context.Doctors.FindAsync(id);
             if (doctor == null) return NotFound();
-
             var model = new DoctorManagementViewModel{
                 Id = doctor.Id,
                 FullName = doctor.Name,
@@ -86,7 +86,6 @@ namespace ClinicManagementSystem.Controllers{
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditDoctor(DoctorManagementViewModel model){
             if (!ModelState.IsValid) return View(model);
-
             var doctor = await _context.Doctors.FindAsync(model.Id);
             if (doctor == null) return NotFound();
 
@@ -96,10 +95,8 @@ namespace ClinicManagementSystem.Controllers{
             doctor.Specialization = model.Specialization;
             doctor.Qualification = model.Qualification;
             doctor.Experience = model.Experience;
-
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Update", "Doctor", doctor.Id, $"Doctor {doctor.Name} updated");
-
             TempData["SuccessMessage"] = $"Doctor {model.FullName} updated.";
             return RedirectToAction("Doctors");
         }
@@ -117,7 +114,7 @@ namespace ClinicManagementSystem.Controllers{
             return RedirectToAction("Doctors");
         }
 
-        // Receptionists management (similar pattern)
+        // ---------- RECEPTIONISTS MANAGEMENT ----------
         public async Task<IActionResult> Receptionists(){
             var users = await _context.Users.Where(u => u.Role == "Receptionist").ToListAsync();
             var viewModels = users.Select(u => new ReceptionistManagementViewModel{
@@ -135,7 +132,6 @@ namespace ClinicManagementSystem.Controllers{
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddReceptionist(ReceptionistManagementViewModel model){
             if (!ModelState.IsValid) return View(model);
-
             var user = new User{
                 FullName = model.FullName,
                 Email = model.Email,
@@ -145,14 +141,12 @@ namespace ClinicManagementSystem.Controllers{
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
             await _audit.LogAsync("Create", "Receptionist", user.Id, $"Receptionist {user.FullName} added");
-
             TempData["SuccessMessage"] = $"Receptionist {model.FullName} added.";
             return RedirectToAction("Receptionists");
         }
 
-        // Patients list (read-only for admin)
+        // ---------- PATIENTS LIST ----------
         public async Task<IActionResult> Patients(){
             var patients = await _context.Patients.ToListAsync();
             var viewModels = patients.Select(p => new PatientListItemViewModel{
@@ -166,10 +160,43 @@ namespace ClinicManagementSystem.Controllers{
             return View(viewModels);
         }
 
-        // Audit Logs
+        // ---------- AUDIT LOGS ----------
         public async Task<IActionResult> AuditLogs(){
             var logs = await _context.AuditLogs.OrderByDescending(l => l.Timestamp).Take(200).ToListAsync();
             return View(logs);
+        }
+
+        // ---------- PROFILE (NEW) ----------
+        public async Task<IActionResult> Profile(){
+            var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            if (user == null){
+                return RedirectToAction("Login", "Account");
+            }
+
+            var model = new UserProfileViewModel{
+                FullName = user.FullName,
+                Email = user.Email,
+                Phone = user.Phone
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(UserProfileViewModel model){
+            if (!ModelState.IsValid) return View(model);
+
+            var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            user.FullName = model.FullName;
+            user.Phone = model.Phone;
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("Update", "User", user.Id, "Profile updated");
+            TempData["SuccessMessage"] = "Profile updated successfully.";
+            return RedirectToAction("Profile");
         }
     }
 }

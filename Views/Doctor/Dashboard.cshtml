@@ -1,327 +1,130 @@
-﻿@{
+﻿@model ClinicManagementSystem.ViewModels.DoctorDashboardViewModel
+
+@{
     ViewData["Title"] = "Doctor Dashboard";
 }
 
 <div class="container-fluid py-4">
-
     <!-- Header -->
-
     <div class="mb-4">
-
-        <h2 class="fw-bold">
-            Good Morning, Doctor 👋
-        </h2>
-
-        <p class="text-muted">
-            Welcome to your ClinicCare dashboard.
-        </p>
-
+        <h2 class="fw-bold">Good Morning, Doctor 👨‍⚕️</h2>
+        <p class="text-muted">Welcome to your ClinicCare dashboard.</p>
     </div>
 
-
-    <!-- Statistics -->
-
+    <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
-
         <div class="col-md-6 col-xl-3">
-
             <div class="card border-0 shadow-sm h-100">
-
                 <div class="card-body">
-
-                    <p class="text-muted mb-1">
-                        Today's Appointments
-                    </p>
-
-                    <h3 class="fw-bold">
-                        8
-                    </h3>
-
-                    <span class="text-primary">
-                        📅 Today
-                    </span>
-
+                    <p class="text-muted mb-1">Today's Appointments</p>
+                    <h3 class="fw-bold">@Model.TodayAppointments</h3>
+                    <span class="text-primary">Today</span>
                 </div>
-
             </div>
-
         </div>
-
-
         <div class="col-md-6 col-xl-3">
-
             <div class="card border-0 shadow-sm h-100">
-
                 <div class="card-body">
-
-                    <p class="text-muted mb-1">
-                        Completed
-                    </p>
-
-                    <h3 class="fw-bold">
-                        5
-                    </h3>
-
-                    <span class="text-success">
-                        ✓ Completed today
-                    </span>
-
+                    <p class="text-muted mb-1">Pending Appointments</p>
+                    <h3 class="fw-bold">@Model.PendingAppointments</h3>
+                    <span class="text-warning">Needs action</span>
                 </div>
-
             </div>
-
         </div>
-
-
         <div class="col-md-6 col-xl-3">
-
             <div class="card border-0 shadow-sm h-100">
-
                 <div class="card-body">
-
-                    <p class="text-muted mb-1">
-                        Pending
-                    </p>
-
-                    <h3 class="fw-bold">
-                        2
-                    </h3>
-
-                    <span class="text-warning">
-                        ⏳ Waiting
-                    </span>
-
+                    <p class="text-muted mb-1">Total Patients</p>
+                    <h3 class="fw-bold">@Model.TotalPatients</h3>
+                    <span class="text-success">All time</span>
                 </div>
-
             </div>
-
         </div>
-
-
-        <div class="col-md-6 col-xl-3">
-
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <p class="text-muted mb-1">
-                        Total Patients
-                    </p>
-
-                    <h3 class="fw-bold">
-                        124
-                    </h3>
-
-                    <span class="text-muted">
-                        👥 Registered
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
     </div>
 
-
-    <!-- Main Content -->
-
+    <!-- Quick Actions -->
     <div class="row g-4">
-
-        <!-- Today's Appointments -->
-
-        <div class="col-lg-8">
-
-            <div class="card border-0 shadow-sm">
-
-                <div class="card-header bg-white border-0 pt-4 px-4">
-
-                    <div class="d-flex justify-content-between">
-
-                        <h5 class="fw-bold">
-                            Today's Appointments
-                        </h5>
-
-                        <a href="#"
-                           class="text-decoration-none">
-                            View All
-                        </a>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card-body px-4">
-
-                    <div class="table-responsive">
-
-                        <table class="table align-middle">
-
-                            <thead>
-
-                                <tr>
-                                    <th>Patient</th>
-                                    <th>Time</th>
-                                    <th>Reason</th>
-                                    <th>Status</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                <tr>
-
-                                    <td>
-                                        <strong>
-                                            Rahim Ahmed
-                                        </strong>
-
-                                        <br />
-
-                                        <small class="text-muted">
-                                            Patient #P001
-                                        </small>
-                                    </td>
-
-                                    <td>
-                                        10:00 AM
-                                    </td>
-
-                                    <td>
-                                        Fever
-                                    </td>
-
-                                    <td>
-                                        <span class="badge bg-success">
-                                            Confirmed
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-
-                                <tr>
-
-                                    <td>
-                                        <strong>
-                                            Karim Hasan
-                                        </strong>
-
-                                        <br />
-
-                                        <small class="text-muted">
-                                            Patient #P002
-                                        </small>
-                                    </td>
-
-                                    <td>
-                                        11:00 AM
-                                    </td>
-
-                                    <td>
-                                        Headache
-                                    </td>
-
-                                    <td>
-                                        <span class="badge bg-warning text-dark">
-                                            Pending
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-
-                                <tr>
-
-                                    <td>
-                                        <strong>
-                                            Nusrat Akter
-                                        </strong>
-
-                                        <br />
-
-                                        <small class="text-muted">
-                                            Patient #P003
-                                        </small>
-                                    </td>
-
-                                    <td>
-                                        12:00 PM
-                                    </td>
-
-                                    <td>
-                                        Follow-up
-                                    </td>
-
-                                    <td>
-                                        <span class="badge bg-success">
-                                            Confirmed
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Quick Actions -->
-
         <div class="col-lg-4">
-
             <div class="card border-0 shadow-sm">
-
                 <div class="card-header bg-white border-0 pt-4 px-4">
-
-                    <h5 class="fw-bold">
-                        Quick Actions
-                    </h5>
-
+                    <h5 class="fw-bold">Quick Actions</h5>
                 </div>
-
                 <div class="card-body px-4">
-
                     <div class="d-grid gap-3">
-
-                        <a asp-controller="Doctor" asp-action="Appointments" class="btn btn-outline-primary w-100">
-                            My Appointments
-                        </a>
-
-                        <a href="#"
-                           class="btn btn-outline-primary">
-                            👥 Patient List
-                        </a>
-
-                        <a asp-controller="Doctor"
-                           asp-action="Profile"
-                           class="btn btn-outline-secondary">
-                            👤 My Profile
-                        </a>
-
-                        <a asp-controller="Doctor" asp-action="Schedule" class="btn btn-outline-primary w-100">
-                            My Schedule
-                        </a>
-
+                        <a asp-controller="Doctor" asp-action="Appointments" class="btn btn-outline-primary w-100">My Appointments</a>
+                        <a asp-controller="Doctor" asp-action="Prescriptions" class="btn btn-outline-primary w-100">Prescriptions</a>
+                        <a asp-controller="Doctor" asp-action="Profile" class="btn btn-outline-secondary w-100">My Profile</a>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
 
+        <!-- Recent Appointments Preview -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="fw-bold">Upcoming Appointments</h5>
+                        <a asp-controller="Doctor" asp-action="Appointments" class="text-decoration-none">View All</a>
+                    </div>
+                </div>
+                <div class="card-body px-4">
+                    @if (Model.RecentAppointments != null && Model.RecentAppointments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appt in Model.RecentAppointments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@appt.PatientName</strong><br />
+                                                <small class="text-muted">@appt.PatientCode</small>
+                                            </td>
+                                            <td>@appt.AppointmentDate.ToString("dd MMM yyyy")</td>
+                                            <td>@appt.AppointmentTime</td>
+                                            <td>
+                                                @if (appt.Status == "Confirmed")
+                                                {
+                                                    <span class="badge bg-success">Confirmed</span>
+                                                }
+                                                else if (appt.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                }
+                                                else if (appt.Status == "Rejected")
+                                                {
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                }
+                                                else if (appt.Status == "Completed")
+                                                {
+                                                    <span class="badge bg-primary">Completed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@appt.Status</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No upcoming appointments.</p>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>

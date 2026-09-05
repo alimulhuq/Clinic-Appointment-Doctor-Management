@@ -1,113 +1,79 @@
-﻿@{
+﻿@model IEnumerable<Clinic_Application_Doctor_Management.Models.Appointment>
+
+@{
     ViewData["Title"] = "My Appointments";
 }
 
 <div class="container py-4">
-
     <div class="mb-4">
-
-        <h2 class="fw-bold">
-            My Appointments
-        </h2>
-
-        <p class="text-muted">
-            View your upcoming and previous appointments.
-        </p>
-
+        <h2 class="fw-bold">My Appointments</h2>
+        <p class="text-muted">View your upcoming and previous appointments.</p>
     </div>
-
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">
-            @TempData["SuccessMessage"]
-        </div>
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
     }
 
-
     <div class="card border-0 shadow-sm">
-
         <div class="card-body">
-
             <div class="table-responsive">
-
                 <table class="table align-middle">
-
                     <thead>
-
                         <tr>
                             <th>Doctor</th>
                             <th>Specialization</th>
                             <th>Date</th>
                             <th>Time</th>
+                            <th>Reason</th>
                             <th>Status</th>
                         </tr>
-
                     </thead>
-
                     <tbody>
-
-                        <tr>
-
-                            <td>
-                                Dr. Ahmed Rahman
-                            </td>
-
-                            <td>
-                                Cardiologist
-                            </td>
-
-                            <td>
-                                28 Aug 2026
-                            </td>
-
-                            <td>
-                                10:30 AM
-                            </td>
-
-                            <td>
-                                <span class="badge bg-success">
-                                    Confirmed
-                                </span>
-                            </td>
-
-                        </tr>
-
-
-                        <tr>
-
-                            <td>
-                                Dr. Nusrat Jahan
-                            </td>
-
-                            <td>
-                                General Physician
-                            </td>
-
-                            <td>
-                                02 Sep 2026
-                            </td>
-
-                            <td>
-                                04:00 PM
-                            </td>
-
-                            <td>
-                                <span class="badge bg-warning text-dark">
-                                    Pending
-                                </span>
-                            </td>
-
-                        </tr>
-
+                        @if (Model.Any())
+                        {
+                            foreach (var appt in Model)
+                            {
+                                <tr>
+                                    <td>@(appt.Doctor?.Name ?? "Unknown")</td>
+                                    <td>@(appt.Doctor?.Specialization ?? "")</td>
+                                    <td>@appt.AppointmentDate.ToString("dd MMM yyyy")</td>
+                                    <td>@appt.AppointmentTime.ToString(@"hh\:mm tt")</td>
+                                    <td>@appt.Reason</td>
+                                    <td>
+                                        @if (appt.Status == "Confirmed")
+                                        {
+                                            <span class="badge bg-success">Confirmed</span>
+                                        }
+                                        else if (appt.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        }
+                                        else if (appt.Status == "Rejected")
+                                        {
+                                            <span class="badge bg-danger">Rejected</span>
+                                        }
+                                        else if (appt.Status == "Completed")
+                                        {
+                                            <span class="badge bg-primary">Completed</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@appt.Status</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No appointments found.</td>
+                            </tr>
+                        }
                     </tbody>
-
                 </table>
-
             </div>
-
         </div>
-
     </div>
-
 </div>

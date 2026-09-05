@@ -3,25 +3,21 @@
 @{
     ViewData["Title"] = "Book Appointment";
     var patients = ViewBag.Patients as List<ClinicManagementSystem.ViewModels.PatientListItemViewModel>;
-    var doctors = ViewBag.Doctors as List<(int Id, string Name)>;
+    var doctors = ViewBag.Doctors as List<Clinic_Application_Doctor_Management.Models.Doctor>;
 }
 
 <div class="container py-4">
-
     <h3 class="mb-4">Book Appointment</h3>
-
     <div class="card">
         <div class="card-body">
-
-            <form asp-action="BookAppointment" method="post">
-
+            <form asp-action="BookAppointment" method="post" id="bookingForm">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
                 <div class="mb-3">
                     <label class="form-label">Patient</label>
                     <select asp-for="PatientId" class="form-select">
                         <option value="">-- Select Patient --</option>
-                        @foreach (var p in patients!)
+                        @foreach (var p in patients ?? new List<ClinicManagementSystem.ViewModels.PatientListItemViewModel>())
                         {
                             <option value="@p.Id">@p.FullName (@p.PatientCode)</option>
                         }
@@ -33,7 +29,7 @@
                     <label class="form-label">Doctor</label>
                     <select asp-for="DoctorId" class="form-select">
                         <option value="">-- Select Doctor --</option>
-                        @foreach (var d in doctors!)
+                        @foreach (var d in doctors ?? new List<Clinic_Application_Doctor_Management.Models.Doctor>())
                         {
                             <option value="@d.Id">@d.Name</option>
                         }
@@ -43,19 +39,23 @@
 
                 <div class="mb-3">
                     <label class="form-label">Appointment Date</label>
-                    <input asp-for="AppointmentDate" type="date" class="form-control" />
+                    <input asp-for="AppointmentDate" type="date" class="form-control" id="appointmentDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                     <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+                    <div id="dateError" class="text-danger small mt-1" style="display:none;"></div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Appointment Time</label>
-                    <select asp-for="AppointmentTime" class="form-select">
+                    <select asp-for="AppointmentTime" class="form-select" id="appointmentTime">
                         <option value="">-- Select Time --</option>
                         <option value="10:00 AM">10:00 AM</option>
                         <option value="10:30 AM">10:30 AM</option>
                         <option value="11:00 AM">11:00 AM</option>
+                        <option value="11:30 AM">11:30 AM</option>
                         <option value="04:00 PM">04:00 PM</option>
                         <option value="04:30 PM">04:30 PM</option>
+                        <option value="05:00 PM">05:00 PM</option>
+                        <option value="05:30 PM">05:30 PM</option>
                     </select>
                     <span asp-validation-for="AppointmentTime" class="text-danger"></span>
                 </div>
@@ -68,16 +68,95 @@
 
                 <button type="submit" class="btn btn-primary">Book Appointment</button>
                 <a asp-action="Dashboard" class="btn btn-outline-secondary">Cancel</a>
-
             </form>
-
         </div>
     </div>
-
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        (function () {
+            const dateInput = document.getElementById('appointmentDate');
+            const timeSelect = document.getElementById('appointmentTime');
+            const errorDiv = document.getElementById('dateError');
+            const form = document.getElementById('bookingForm');
+
+            // Function to validate date and time combination
+            function validateDateTime() {
+                const selectedDate = new Date(dateInput.value);
+                const now = new Date();
+
+                if (!dateInput.value) {
+                    clearError();
+                    return true;
+                }
+
+                // If selected date is today and time is past, block
+                if (selectedDate.toDateString() === now.toDateString()) {
+                    if (timeSelect.value) {
+                        const timeParts = timeSelect.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                        if (timeParts) {
+                            let hours = parseInt(timeParts[1]);
+                            const minutes = parseInt(timeParts[2]);
+                            const meridiem = timeParts[3].toUpperCase();
+                            if (meridiem === 'PM' && hours !== 12) hours += 12;
+                            if (meridiem === 'AM' && hours === 12) hours = 0;
+                            const selectedTime = new Date();
+                            selectedTime.setHours(hours, minutes, 0, 0);
+                            if (selectedTime < now) {
+                                showError('Please select a future time for today\'s appointment.');
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                // If date is in the past
+                if (selectedDate < now && selectedDate.toDateString() !== now.toDateString()) {
+                    showError('Please select a future date.');
+                    return false;
+                }
+
+                clearError();
+                return true;
+            }
+
+            function showError(message) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                dateInput.classList.add('is-invalid');
+                dateInput.style.cursor = 'not-allowed';
+            }
+
+            function clearError() {
+                errorDiv.textContent = '';
+                errorDiv.style.display = 'none';
+                dateInput.classList.remove('is-invalid');
+                dateInput.style.cursor = 'pointer';
+            }
+
+            dateInput.addEventListener('change', validateDateTime);
+            timeSelect.addEventListener('change', validateDateTime);
+            form.addEventListener('submit', function (e) {
+                if (!validateDateTime()) {
+                    e.preventDefault();
+                }
+            });
+
+            validateDateTime();
+        })();
+    </script>
+    <style>
+        #appointmentDate.is-invalid {
+            border-color: #dc3545;
+            cursor: not-allowed !important;
+            background-color: #f8d7da;
+        }
+        #appointmentTime:disabled {
+            cursor: not-allowed;
+        }
+    </style>
 }

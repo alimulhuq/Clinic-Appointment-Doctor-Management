@@ -1,187 +1,128 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"] - Clinic Management System</title>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <!-- Our CSS -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <link rel="stylesheet"
-          href="~/ClinicManagementSystem.styles.css"
-          asp-append-version="true" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/ClinicManagementSystem.styles.css" asp-append-version="true" />
 </head>
-
-<body>
-
-    <!-- ================= NAVBAR ================= -->
-
+<body class="d-flex flex-column min-vh-100">
+    <!-- ========== NAVBAR ========== -->
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-
             <div class="container">
-
                 <!-- Logo / Website Name -->
-                <a class="navbar-brand fw-bold"
-                   asp-controller="Home"
-                   asp-action="Index">
-                    🏥 ClinicCare
-                </a>
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">ClinicCare</a>
 
                 <!-- Mobile Menu Button -->
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#mainNavbar"
-                        aria-controls="mainNavbar"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
-
                 </button>
 
                 <!-- Navigation -->
                 <div class="collapse navbar-collapse" id="mainNavbar">
-
                     <ul class="navbar-nav ms-auto">
-
-                        <!-- Home -->
                         <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Home"
-                               asp-action="Index">
-                                Home
-                            </a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-
-                        <!-- Doctors -->
                         <li class="nav-item">
-                            <a class="nav-link"
-                               href="#">
-                                Doctors
-                            </a>
+                            <a class="nav-link" href="#">Doctors</a>
                         </li>
-
-                        <!-- About -->
                         <li class="nav-item">
-                            <a class="nav-link"
-                               href="#">
-                                About
-                            </a>
+                            <a class="nav-link" href="#">About</a>
                         </li>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            // Corrected: no @{ } block needed inside @if
+                            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                            string dashboardAction = "";
+                            string dashboardController = "";
+                            switch (userRole)
+                            {
+                                case "Admin":
+                                    dashboardAction = "Dashboard";
+                                    dashboardController = "Admin";
+                                    break;
+                                case "Doctor":
+                                    dashboardAction = "Dashboard";
+                                    dashboardController = "Doctor";
+                                    break;
+                                case "Receptionist":
+                                    dashboardAction = "Dashboard";
+                                    dashboardController = "Receptionist";
+                                    break;
+                                default: // Patient or other
+                                    dashboardAction = "Dashboard";
+                                    dashboardController = "Patient";
+                                    break;
+                            }
+
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light ms-2" asp-controller="@dashboardController" asp-action="@dashboardAction">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="MyProfile">My Profile</a>
+                            </li>
                             <li class="nav-item ms-lg-2">
-                                <a class="btn btn-light text-primary px-4"
-                                   asp-controller="Account"
-                                   asp-action="Logout">
-                                    Logout
-                                </a>
+                                <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Logout">Logout</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item ms-lg-2">
-                                <a class="btn btn-light text-primary px-4"
-                                   asp-controller="Account"
-                                   asp-action="Login">
-                                    Login
-                                </a>
+                                <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Login">Login</a>
                             </li>
                         }
-
                     </ul>
-
                 </div>
-
             </div>
-
         </nav>
     </header>
 
-
-    <!-- ================= MAIN CONTENT ================= -->
-
-    <main>
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="flex-grow-1">
         @RenderBody()
     </main>
 
-
-    <!-- ================= FOOTER ================= -->
-
+    <!-- ========== FOOTER ========== -->
     <footer class="bg-dark text-light mt-5">
-
         <div class="container py-4">
-
             <div class="row">
-
                 <!-- Clinic Information -->
                 <div class="col-md-6">
-
-                    <h5>🏥 ClinicCare</h5>
-
+                    <h5>ClinicCare</h5>
                     <p class="text-light">
                         Simple and reliable clinic management
                         for patients, doctors and staff.
                     </p>
-
                 </div>
-
                 <!-- Quick Links -->
                 <div class="col-md-6 text-md-end">
-
-                    <p class="mb-1">
-                        Quick Links
-                    </p>
-
-                    <a href="#"
-                       class="text-light me-3">
-                        Doctors
-                    </a>
-
-                    <a href="#"
-                       class="text-light">
-                        About
-                    </a>
-
+                    <p class="mb-1">Quick Links</p>
+                    <a href="#" class="text-light me-3">Doctors</a>
+                    <a href="#" class="text-light">About</a>
                 </div>
-
             </div>
-
             <hr />
-
             <!-- Copyright -->
             <div class="text-center">
-
-                <small>
-                    &copy; 2026 ClinicCare.
-                    All Rights Reserved.
-                </small>
-
+                <small>&copy; 2026 ClinicCare. All Rights Reserved.</small>
             </div>
-
         </div>
-
     </footer>
 
-
-    <!-- ================= JAVASCRIPT ================= -->
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="~/js/site.js"
-            asp-append-version="true"></script>
-
+    <!-- ========== JAVASCRIPT ========== -->
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-
 </body>
 </html>

@@ -16,7 +16,7 @@ namespace Clinic_Application_Doctor_Management.Data{
         public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder){
-            // Appointment relationships
+            // Relationships
             modelBuilder.Entity<Appointment>()
                 .HasOne(a => a.Doctor)
                 .WithMany(d => d.Appointments)
@@ -29,14 +29,12 @@ namespace Clinic_Application_Doctor_Management.Data{
                 .HasForeignKey(a => a.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Schedule
             modelBuilder.Entity<Schedule>()
                 .HasOne(s => s.Doctor)
                 .WithMany(d => d.Schedules)
                 .HasForeignKey(s => s.DoctorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Prescription
             modelBuilder.Entity<Prescription>()
                 .HasOne(p => p.Doctor)
                 .WithMany(d => d.Prescriptions)
@@ -55,7 +53,6 @@ namespace Clinic_Application_Doctor_Management.Data{
                 .HasForeignKey(pi => pi.PrescriptionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Bill
             modelBuilder.Entity<Bill>()
                 .HasOne(b => b.Patient)
                 .WithMany(p => p.Bills)
@@ -68,10 +65,18 @@ namespace Clinic_Application_Doctor_Management.Data{
                 .HasForeignKey(b => b.AppointmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Decimal precision for Bill.Amount
             modelBuilder.Entity<Bill>()
                 .Property(b => b.Amount)
                 .HasPrecision(18, 2);
+
+            // ========== NEW INDEXES for performance ==========
+            modelBuilder.Entity<Appointment>()
+                .HasIndex(a => new { a.PatientId, a.AppointmentDate, a.AppointmentTime })
+                .HasDatabaseName("IX_Appointment_Patient_DateTime");
+
+            modelBuilder.Entity<Appointment>()
+                .HasIndex(a => new { a.DoctorId, a.AppointmentDate, a.AppointmentTime })
+                .HasDatabaseName("IX_Appointment_Doctor_DateTime");
         }
     }
 }

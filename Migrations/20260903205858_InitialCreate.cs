@@ -82,7 +82,7 @@ namespace Clinic_Appointment_Doctor_Management.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DoctorId = table.Column<int>(type: "int", nullable: false),
-                    Day = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    DayOfWeek = table.Column<int>(type: "int", nullable: false),
                     StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
@@ -110,6 +110,7 @@ namespace Clinic_Appointment_Doctor_Management.Migrations
                     AppointmentTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Status = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    DurationMinutes = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -242,14 +243,14 @@ namespace Clinic_Appointment_Doctor_Management.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Appointments_DoctorId",
+                name: "IX_Appointment_Doctor_DateTime",
                 table: "Appointments",
-                column: "DoctorId");
+                columns: new[] { "DoctorId", "AppointmentDate", "AppointmentTime" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Appointments_PatientId",
+                name: "IX_Appointment_Patient_DateTime",
                 table: "Appointments",
-                column: "PatientId");
+                columns: new[] { "PatientId", "AppointmentDate", "AppointmentTime" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bills_AppointmentId",
