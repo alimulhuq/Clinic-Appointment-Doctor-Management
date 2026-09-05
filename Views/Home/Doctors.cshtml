@@ -1,0 +1,53 @@
+@model List<ClinicManagementSystem.ViewModels.DoctorViewModel>
+
+@{
+    ViewData["Title"] = "Find a Doctor";
+}
+
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Our Doctors</h2>
+        <p class="text-muted">Meet our team of qualified specialists.</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var doctor in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4 text-center">
+                            <!-- Doctor Icon -->
+                            <div class="display-4 mb-3">👨‍⚕️</div>
+
+                            <!-- Doctor Name -->
+                            <h5 class="fw-bold">Dr. @doctor.FullName</h5>
+                            <span class="badge bg-primary mb-3">@doctor.Specialization</span>
+
+                            <!-- Details -->
+                            <div class="text-muted small mb-3">
+                                <p class="mb-1"><strong>Qualification:</strong> @doctor.Qualification</p>
+                                <p class="mb-1"><strong>Experience:</strong> @doctor.Experience years</p>
+                                <p class="mb-1"><strong>Phone:</strong> @doctor.Phone</p>
+                                <p class="mb-1"><strong>Available Days:</strong> @doctor.AvailableDays</p>
+                                <p class="mb-0"><strong>Available Time:</strong> @doctor.AvailableTime</p>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2 mt-3">
+                                <a asp-controller="Patient" asp-action="DoctorDetails" asp-route-id="@doctor.DoctorId" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+                                <a asp-controller="Patient" asp-action="BookAppointment" asp-route-id="@doctor.DoctorId" class="btn btn-primary btn-sm w-100">Book Appointment</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted text-center">No doctors available at the moment.</p>
+    }
+</div>

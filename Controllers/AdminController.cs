@@ -5,54 +5,118 @@ using ClinicManagementSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BCrypt.Net;
 
-namespace Clinic_Application_Doctor_Management.Controllers{
+namespace Clinic_Application_Doctor_Management.Controllers
+{
     [Authorize(Roles = "Admin")]
-    public class AdminController : Controller{
+    public class AdminController : Controller
+    {
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _audit;
 
-        public AdminController(ApplicationDbContext context, IAuditService audit){
+        public AdminController(ApplicationDbContext context, IAuditService audit)
+        {
             _context = context;
             _audit = audit;
         }
 
         // ---------- DASHBOARD ----------
-        public async Task<IActionResult> Dashboard(){
-            var model = new AdminDashboardViewModel{
+        public async Task<IActionResult> Dashboard()
+        {
+            var model = new AdminDashboardViewModel
+            {
                 TotalDoctors = await _context.Doctors.CountAsync(),
+                TotalReceptionists = await _context.Users.CountAsync(u => u.Role == "Receptionist"),
                 TotalPatients = await _context.Patients.CountAsync(),
                 TotalAppointments = await _context.Appointments.CountAsync(),
-                TotalReceptionists = await _context.Users.CountAsync(u => u.Role == "Receptionist")
+
+                AllAppointments = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .Include(a => a.Doctor)
+                    .OrderByDescending(a => a.AppointmentDate)
+                    .ThenBy(a => a.AppointmentTime)
+                    .ToListAsync(),
+
+                AllPatients = await _context.Patients
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToListAsync()
             };
             return View(model);
         }
 
-        // ---------- DOCTORS MANAGEMENT ----------
-        public async Task<IActionResult> Doctors(){
-            var doctors = await _context.Doctors.ToListAsync();
-            var viewModels = doctors.Select(d => new DoctorManagementViewModel{
-                Id = d.Id,
-                FullName = d.Name,
-                Email = d.Email,
-                Phone = d.Phone,
-                Specialization = d.Specialization,
-                Qualification = d.Qualification,
-                Experience = d.Experience
+        // ---------- ALL PATIENTS LIST (admin view) ----------
+        public async Task<IActionResult> Patients()
+        {
+            var patients = await _context.Patients
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            var viewModels = patients.Select(p => new AdminPatientDetailsViewModel
+            {
+                Id = p.Id,
+                PatientCode = $"P{p.Id:D3}",
+                FullName = p.FullName,
+                Email = p.Email ?? "",
+                Phone = p.Phone,
+                Age = p.Age,
+                Gender = p.Gender,
+                Address = p.Address ?? "",
+                MedicalHistory = p.MedicalHistory ?? "",
+                Allergies = p.Allergies ?? "None recorded",
+                BloodGroup = p.BloodGroup ?? "",
+                EmergencyContact = p.EmergencyContact ?? "",
+                EmergencyContactPhone = p.EmergencyContactPhone ?? "",
+                CreatedAt = p.CreatedAt
             }).ToList();
+
             return View(viewModels);
         }
 
+        // ---------- PATIENT DETAILS (admin view, no password) ----------
+        public async Task<IActionResult> PatientDetails(int patientId)
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.Id == patientId);
+            if (patient == null)
+            {
+                TempData["ErrorMessage"] = "Patient not found.";
+                return RedirectToAction("Dashboard");
+            }
+
+            var model = new AdminPatientDetailsViewModel
+            {
+                Id = patient.Id,
+                PatientCode = $"P{patient.Id:D3}",
+                FullName = patient.FullName,
+                Email = patient.Email ?? "",
+                Phone = patient.Phone,
+                Age = patient.Age,
+                Gender = patient.Gender,
+                Address = patient.Address ?? "",
+                MedicalHistory = patient.MedicalHistory ?? "",
+                Allergies = patient.Allergies ?? "None recorded",
+                BloodGroup = patient.BloodGroup ?? "",
+                EmergencyContact = patient.EmergencyContact ?? "",
+                EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
+                CreatedAt = patient.CreatedAt
+            };
+
+            return View(model);
+        }
+
+        // ---------- ADD DOCTOR (from dashboard) ----------
+        [HttpGet]
         public IActionResult AddDoctor() => View(new DoctorManagementViewModel());
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddDoctor(DoctorManagementViewModel model){
-            if (!ModelState.IsValid){
-                return View(model);
-            }
+        public async Task<IActionResult> AddDoctor(DoctorManagementViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
 
-            var doctor = new Doctor{
+            var doctor = new Doctor
+            {
                 Name = model.FullName,
                 Email = model.Email,
                 Phone = model.Phone,
@@ -64,75 +128,21 @@ namespace Clinic_Application_Doctor_Management.Controllers{
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Create", "Doctor", doctor.Id, $"Doctor {doctor.Name} added");
             TempData["SuccessMessage"] = $"Doctor {model.FullName} added successfully.";
-            return RedirectToAction("Doctors");
+            return RedirectToAction("Dashboard");
         }
 
-        public async Task<IActionResult> EditDoctor(int id){
-            var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor == null) return NotFound();
-            var model = new DoctorManagementViewModel{
-                Id = doctor.Id,
-                FullName = doctor.Name,
-                Email = doctor.Email,
-                Phone = doctor.Phone,
-                Specialization = doctor.Specialization,
-                Qualification = doctor.Qualification,
-                Experience = doctor.Experience
-            };
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditDoctor(DoctorManagementViewModel model){
-            if (!ModelState.IsValid) return View(model);
-            var doctor = await _context.Doctors.FindAsync(model.Id);
-            if (doctor == null) return NotFound();
-
-            doctor.Name = model.FullName;
-            doctor.Email = model.Email;
-            doctor.Phone = model.Phone;
-            doctor.Specialization = model.Specialization;
-            doctor.Qualification = model.Qualification;
-            doctor.Experience = model.Experience;
-            await _context.SaveChangesAsync();
-            await _audit.LogAsync("Update", "Doctor", doctor.Id, $"Doctor {doctor.Name} updated");
-            TempData["SuccessMessage"] = $"Doctor {model.FullName} updated.";
-            return RedirectToAction("Doctors");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteDoctor(int id){
-            var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor != null){
-                _context.Doctors.Remove(doctor);
-                await _context.SaveChangesAsync();
-                await _audit.LogAsync("Delete", "Doctor", id, $"Doctor {doctor.Name} deleted");
-                TempData["SuccessMessage"] = "Doctor deleted.";
-            }
-            return RedirectToAction("Doctors");
-        }
-
-        // ---------- RECEPTIONISTS MANAGEMENT ----------
-        public async Task<IActionResult> Receptionists(){
-            var users = await _context.Users.Where(u => u.Role == "Receptionist").ToListAsync();
-            var viewModels = users.Select(u => new ReceptionistManagementViewModel{
-                Id = u.Id,
-                FullName = u.FullName,
-                Email = u.Email,
-                Phone = u.Phone
-            }).ToList();
-            return View(viewModels);
-        }
-
+        // ---------- ADD RECEPTIONIST (from dashboard) ----------
+        [HttpGet]
         public IActionResult AddReceptionist() => View(new ReceptionistManagementViewModel());
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddReceptionist(ReceptionistManagementViewModel model){
+        public async Task<IActionResult> AddReceptionist(ReceptionistManagementViewModel model)
+        {
             if (!ModelState.IsValid) return View(model);
-            var user = new User{
+
+            var user = new User
+            {
                 FullName = model.FullName,
                 Email = model.Email,
                 Phone = model.Phone,
@@ -143,38 +153,19 @@ namespace Clinic_Application_Doctor_Management.Controllers{
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Create", "Receptionist", user.Id, $"Receptionist {user.FullName} added");
             TempData["SuccessMessage"] = $"Receptionist {model.FullName} added.";
-            return RedirectToAction("Receptionists");
+            return RedirectToAction("Dashboard");
         }
 
-        // ---------- PATIENTS LIST ----------
-        public async Task<IActionResult> Patients(){
-            var patients = await _context.Patients.ToListAsync();
-            var viewModels = patients.Select(p => new PatientListItemViewModel{
-                Id = p.Id,
-                FullName = p.FullName,
-                PatientCode = $"P{p.Id:D3}",
-                Phone = p.Phone,
-                Age = p.Age,
-                Gender = p.Gender
-            }).ToList();
-            return View(viewModels);
-        }
-
-        // ---------- AUDIT LOGS ----------
-        public async Task<IActionResult> AuditLogs(){
-            var logs = await _context.AuditLogs.OrderByDescending(l => l.Timestamp).Take(200).ToListAsync();
-            return View(logs);
-        }
-
-        // ---------- PROFILE (NEW) ----------
-        public async Task<IActionResult> Profile(){
+        // ---------- PROFILE (view & update) ----------
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
-            if (user == null){
-                return RedirectToAction("Login", "Account");
-            }
+            if (user == null) return RedirectToAction("Login", "Account");
 
-            var model = new UserProfileViewModel{
+            var model = new UserProfileViewModel
+            {
                 FullName = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone
@@ -184,7 +175,8 @@ namespace Clinic_Application_Doctor_Management.Controllers{
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(UserProfileViewModel model){
+        public async Task<IActionResult> Profile(UserProfileViewModel model)
+        {
             if (!ModelState.IsValid) return View(model);
 
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -196,6 +188,34 @@ namespace Clinic_Application_Doctor_Management.Controllers{
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Update", "User", user.Id, "Profile updated");
             TempData["SuccessMessage"] = "Profile updated successfully.";
+            return RedirectToAction("Profile");
+        }
+
+        // ---------- CHANGE PASSWORD ----------
+        [HttpGet]
+        public IActionResult ChangePassword() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            if (!BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash))
+            {
+                ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                return View(model);
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("ChangePassword", "User", user.Id, "Password changed");
+
+            TempData["SuccessMessage"] = "Password changed successfully.";
             return RedirectToAction("Profile");
         }
     }

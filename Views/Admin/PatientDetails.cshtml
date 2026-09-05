@@ -1,0 +1,71 @@
+@model ClinicManagementSystem.ViewModels.AdminPatientDetailsViewModel
+
+@{
+    ViewData["Title"] = "Patient Details";
+}
+
+<div class="container py-4">
+    <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm mb-3">← Back to Dashboard</a>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Patient Details</h4>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Patient Code</h6>
+                    <p class="fw-bold">@Model.PatientCode</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Full Name</h6>
+                    <p class="fw-bold">@Model.FullName</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Email</h6>
+                    <p>@Model.Email</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Phone</h6>
+                    <p>@Model.Phone</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Age</h6>
+                    <p>@Model.Age</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Gender</h6>
+                    <p>@Model.Gender</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Address</h6>
+                    <p>@Model.Address</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Medical History</h6>
+                    <p>@Model.MedicalHistory</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Allergies</h6>
+                    <p>@Model.Allergies</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Blood Group</h6>
+                    <p>@Model.BloodGroup</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Emergency Contact</h6>
+                    <p>@Model.EmergencyContact</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Emergency Contact Phone</h6>
+                    <p>@Model.EmergencyContactPhone</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Registered On</h6>
+                    <p>@Model.CreatedAt.ToString("dd MMM yyyy")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

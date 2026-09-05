@@ -8,28 +8,32 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using BCrypt.Net;
 
-namespace ClinicManagementSystem.Controllers{
+namespace Clinic_Application_Doctor_Management.Controllers
+{
     [Authorize(Roles = "Patient")]
-    public class PatientController : Controller{
+    public class PatientController : Controller
+    {
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _audit;
         private readonly IAppointmentService _appointmentService;
 
-        public PatientController(ApplicationDbContext context, IAuditService audit, IAppointmentService appointmentService){
+        public PatientController(ApplicationDbContext context, IAuditService audit, IAppointmentService appointmentService)
+        {
             _context = context;
             _audit = audit;
             _appointmentService = appointmentService;
         }
 
-        public async Task<IActionResult> Dashboard(){
+        public async Task<IActionResult> Dashboard()
+        {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
-            if (patient == null){
-                return RedirectToAction("Profile");
-            }
+            if (patient == null) return RedirectToAction("Profile");
 
-            var model = new PatientDashboardViewModel{
+            var model = new PatientDashboardViewModel
+            {
                 UpcomingAppointments = await _context.Appointments
                     .CountAsync(a => a.PatientId == patient!.Id && a.AppointmentDate >= DateTime.Today && a.Status != "Cancelled"),
 
@@ -47,7 +51,8 @@ namespace ClinicManagementSystem.Controllers{
                     .OrderBy(a => a.AppointmentDate)
                     .ThenBy(a => a.AppointmentTime)
                     .Take(5)
-                    .Select(a => new DoctorAppointmentViewModel{
+                    .Select(a => new DoctorAppointmentViewModel
+                    {
                         Id = a.Id,
                         DoctorName = a.Doctor.Name,
                         Specialization = a.Doctor.Specialization,
@@ -56,14 +61,15 @@ namespace ClinicManagementSystem.Controllers{
                         Status = a.Status
                     }).ToListAsync()
             };
-
             return View(model);
         }
 
-        // ---------------- Doctors List ----------------
-        public async Task<IActionResult> Doctors(){
+        // ---------------- DOCTORS LIST ----------------
+        public async Task<IActionResult> Doctors()
+        {
             var doctors = await _context.Doctors.ToListAsync();
-            var viewModels = doctors.Select(d => new DoctorViewModel{
+            var viewModels = doctors.Select(d => new DoctorViewModel
+            {
                 DoctorId = d.Id,
                 FullName = d.Name,
                 Specialization = d.Specialization,
@@ -75,19 +81,21 @@ namespace ClinicManagementSystem.Controllers{
                     ? $"{d.Schedules.First(s => s.IsActive).StartTime.ToString(@"hh\:mm")} - {d.Schedules.First(s => s.IsActive).EndTime.ToString(@"hh\:mm")}"
                     : "Not specified"
             }).ToList();
-
             return View(viewModels);
         }
 
-        // ---------------- Doctor Details ----------------
-        public async Task<IActionResult> DoctorDetails(int id){
+        // ---------------- DOCTOR DETAILS ----------------
+        public async Task<IActionResult> DoctorDetails(int id)
+        {
             var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor == null){
+            if (doctor == null)
+            {
                 TempData["ErrorMessage"] = "Doctor not found.";
                 return RedirectToAction("Doctors");
             }
 
-            var viewModel = new DoctorViewModel{
+            var viewModel = new DoctorViewModel
+            {
                 DoctorId = doctor.Id,
                 FullName = doctor.Name,
                 Specialization = doctor.Specialization,
@@ -99,44 +107,43 @@ namespace ClinicManagementSystem.Controllers{
                     ? $"{doctor.Schedules.First(s => s.IsActive).StartTime.ToString(@"hh\:mm")} - {doctor.Schedules.First(s => s.IsActive).EndTime.ToString(@"hh\:mm")}"
                     : "Not specified"
             };
-
             return View(viewModel);
         }
 
-        // ---------------- Book Appointment (GET) ----------------
-        public async Task<IActionResult> BookAppointment(int id){
+        // ---------------- BOOK APPOINTMENT (GET) ----------------
+        public async Task<IActionResult> BookAppointment(int id)
+        {
             var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor == null){
+            if (doctor == null)
+            {
                 TempData["ErrorMessage"] = "Doctor not found.";
                 return RedirectToAction("Doctors");
             }
 
-            var model = new AppointmentViewModel{
+            var model = new AppointmentViewModel
+            {
                 DoctorId = doctor.Id,
                 DoctorName = doctor.Name,
                 Specialization = doctor.Specialization,
                 AppointmentDate = DateTime.Today.AddDays(1),
                 AppointmentTime = "09:00 AM"
             };
-
             return View(model);
         }
 
-        // ---------------- Book Appointment (POST) ----------------
+        // ---------------- BOOK APPOINTMENT (POST) ----------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BookAppointment(AppointmentViewModel model){
-            if (!ModelState.IsValid){
-                return View(model);
-            }
+        public async Task<IActionResult> BookAppointment(AppointmentViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
 
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
-            if (patient == null){
-                return RedirectToAction("Profile");
-            }
+            if (patient == null) return RedirectToAction("Profile");
 
-            var appointment = new Appointment{
+            var appointment = new Appointment
+            {
                 DoctorId = model.DoctorId,
                 PatientId = patient.Id,
                 AppointmentDate = model.AppointmentDate,
@@ -147,12 +154,12 @@ namespace ClinicManagementSystem.Controllers{
             };
 
             var (isValid, errorMessage) = await _appointmentService.ValidateAppointmentAsync(appointment);
-            if (!isValid){
-                if (!string.IsNullOrEmpty(errorMessage)){
-                    ModelState.AddModelError("", errorMessage);
-                }
+            if (!isValid)
+            {
+                if (!string.IsNullOrEmpty(errorMessage)) ModelState.AddModelError("", errorMessage);
                 var doctor = await _context.Doctors.FindAsync(model.DoctorId);
-                if (doctor != null){
+                if (doctor != null)
+                {
                     model.DoctorName = doctor.Name;
                     model.Specialization = doctor.Specialization;
                 }
@@ -167,13 +174,12 @@ namespace ClinicManagementSystem.Controllers{
             return RedirectToAction("MyAppointments");
         }
 
-        // ---------------- My Appointments ----------------
-        public async Task<IActionResult> MyAppointments(){
+        // ---------------- MY APPOINTMENTS ----------------
+        public async Task<IActionResult> MyAppointments()
+        {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
-            if (patient == null){
-                return RedirectToAction("Profile");
-            }
+            if (patient == null) return RedirectToAction("Profile");
 
             var appointments = await _context.Appointments
                 .Include(a => a.Doctor)
@@ -181,17 +187,15 @@ namespace ClinicManagementSystem.Controllers{
                 .OrderByDescending(a => a.AppointmentDate)
                 .ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
-
             return View(appointments);
         }
 
-        // ---------------- Prescriptions ----------------
-        public async Task<IActionResult> Prescriptions(){
+        // ---------------- PRESCRIPTIONS ----------------
+        public async Task<IActionResult> Prescriptions()
+        {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
-            if (patient == null){
-                return RedirectToAction("Profile");
-            }
+            if (patient == null) return RedirectToAction("Profile");
 
             var prescriptions = await _context.Prescriptions
                 .Include(p => p.Doctor)
@@ -199,36 +203,33 @@ namespace ClinicManagementSystem.Controllers{
                 .Where(p => p.PatientId == patient.Id)
                 .OrderByDescending(p => p.PrescriptionDate)
                 .ToListAsync();
-
             return View(prescriptions);
         }
 
-        // ---------------- Bills ----------------
-        public async Task<IActionResult> Bills(){
+        // ---------------- BILLS ----------------
+        public async Task<IActionResult> Bills()
+        {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
-            if (patient == null){
-                return RedirectToAction("Profile");
-            }
+            if (patient == null) return RedirectToAction("Profile");
 
             var bills = await _context.Bills
                 .Include(b => b.Appointment)
                 .Where(b => b.PatientId == patient.Id)
                 .OrderByDescending(b => b.BillDate)
                 .ToListAsync();
-
             return View(bills);
         }
 
-        // ---------------- Profile (GET) ----------------
-        public async Task<IActionResult> Profile(){
+        // ---------------- PROFILE (GET) ----------------
+        public async Task<IActionResult> Profile()
+        {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
-            if (patient == null){
-                return RedirectToAction("Profile", "Account");
-            }
+            if (patient == null) return RedirectToAction("Profile", "Account");
 
-            var model = new PatientProfileViewModel{
+            var model = new PatientProfileViewModel
+            {
                 FullName = patient.FullName,
                 Email = patient.Email ?? "",
                 Phone = patient.Phone,
@@ -241,23 +242,19 @@ namespace ClinicManagementSystem.Controllers{
                 EmergencyContact = patient.EmergencyContact,
                 EmergencyContactPhone = patient.EmergencyContactPhone
             };
-
             return View(model);
         }
 
-        // ---------------- Profile (POST) ----------------
+        // ---------------- PROFILE (POST) ----------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(PatientProfileViewModel model){
-            if (!ModelState.IsValid){
-                return View(model);
-            }
+        public async Task<IActionResult> Profile(PatientProfileViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
 
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
-            if (patient == null){
-                return RedirectToAction("Profile", "Account");
-            }
+            if (patient == null) return RedirectToAction("Profile", "Account");
 
             patient.FullName = model.FullName;
             patient.Phone = model.Phone;
@@ -272,9 +269,36 @@ namespace ClinicManagementSystem.Controllers{
 
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Update", "Patient", patient.Id, "Profile updated");
-
             TempData["SuccessMessage"] = "Profile updated successfully.";
-            return View(model);
+            return RedirectToAction("Profile");
+        }
+
+        // ---------------- CHANGE PASSWORD (NEW) ----------------
+        [HttpGet]
+        public IActionResult ChangePassword() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            if (!BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash))
+            {
+                ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                return View(model);
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("ChangePassword", "User", user.Id, "Password changed");
+
+            TempData["SuccessMessage"] = "Password changed successfully.";
+            return RedirectToAction("Profile");
         }
     }
 }

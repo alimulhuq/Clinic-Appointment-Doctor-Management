@@ -5,29 +5,15 @@
 }
 
 <div class="container py-5">
-
     <div class="row justify-content-center">
-
         <div class="col-md-5 col-lg-4">
-
             <div class="card shadow border-0">
-
                 <div class="card-body p-4">
-
                     <div class="text-center mb-4">
-
                         <div class="fs-1">🏥</div>
-
-                        <h3 class="fw-bold">
-                            Welcome Back
-                        </h3>
-
-                        <p class="text-muted">
-                            Login to ClinicCare
-                        </p>
-
+                        <h3 class="fw-bold">Welcome Back</h3>
+                        <p class="text-muted">Login to ClinicCare</p>
                     </div>
-
 
                     @if (ViewBag.InfoMessage != null)
                     {
@@ -38,94 +24,41 @@
                         <div class="alert alert-success">@TempData["SuccessMessage"]</div>
                     }
 
-                    <form asp-action="Login"
-                          asp-controller="Account"
-                          asp-route-returnUrl="@ViewBag.ReturnUrl"
-                          method="post">
-
+                    <form asp-action="Login" asp-controller="Account" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post">
                         <!-- Email -->
-
                         <div class="mb-3">
-
-                            <label asp-for="Email"
-                                   class="form-label">
-                                Email Address
-                            </label>
-
-                            <input asp-for="Email"
-                                   class="form-control"
-                                   placeholder="Enter your email" />
-
-                            <span asp-validation-for="Email"
-                                  class="text-danger">
-                            </span>
-
+                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-
 
                         <!-- Password -->
-
                         <div class="mb-3">
-
-                            <label asp-for="Password"
-                                   class="form-label">
-                                Password
-                            </label>
-
-                            <input asp-for="Password"
-                                   class="form-control"
-                                   placeholder="Enter your password" />
-
-                            <span asp-validation-for="Password"
-                                  class="text-danger">
-                            </span>
-
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
-
 
                         <!-- Login Button -->
-
                         <div class="d-grid">
-
-                            <button type="submit"
-                                    class="btn btn-primary">
-                                Login
-                            </button>
-
+                            <button type="submit" class="btn btn-primary">Login</button>
                         </div>
-
-
-                        <!-- Registration -->
-
-                        <div class="text-center mt-4">
-
-                            <span class="text-muted">
-                                Don't have an account?
-                            </span>
-
-                            <a asp-controller="Account"
-                               asp-action="Register"
-                               class="text-decoration-none">
-                                Create Patient Account
-                            </a>
-
-                        </div>
-
                     </form>
 
+                    <div class="text-center mt-4">
+                        <span class="text-muted">Don't have an account?</span>
+                        <a asp-controller="Account" asp-action="Register" class="text-decoration-none">Create Patient Account</a>
+                    </div>
+
+                    <div class="text-center mt-2">
+                        <a asp-controller="Account" asp-action="AdminLogin" class="text-decoration-none text-muted small">Admin Login</a>
+                    </div>
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
 
-
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
-
 }

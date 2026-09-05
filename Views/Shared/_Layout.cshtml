@@ -33,7 +33,7 @@
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Doctors</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Doctors">Doctors</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">About</a>
@@ -41,39 +41,47 @@
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            // Corrected: no @{ } block needed inside @if
                             var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-                            string dashboardAction = "";
-                            string dashboardController = "";
-                            switch (userRole)
-                            {
-                                case "Admin":
-                                    dashboardAction = "Dashboard";
-                                    dashboardController = "Admin";
-                                    break;
-                                case "Doctor":
-                                    dashboardAction = "Dashboard";
-                                    dashboardController = "Doctor";
-                                    break;
-                                case "Receptionist":
-                                    dashboardAction = "Dashboard";
-                                    dashboardController = "Receptionist";
-                                    break;
-                                default: // Patient or other
-                                    dashboardAction = "Dashboard";
-                                    dashboardController = "Patient";
-                                    break;
-                            }
 
-                            <li class="nav-item">
-                                <a class="btn btn-outline-light ms-2" asp-controller="@dashboardController" asp-action="@dashboardAction">Dashboard</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="MyProfile">My Profile</a>
-                            </li>
-                            <li class="nav-item ms-lg-2">
-                                <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Logout">Logout</a>
-                            </li>
+                            if (userRole == "Admin")
+                            {
+                                <!-- Admin sees ONLY Dashboard and Profile -->
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Admin" asp-action="Profile">Profile</a>
+                                </li>
+                                <li class="nav-item ms-lg-2">
+                                    <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Logout">Logout</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <!-- For Doctor, Receptionist, Patient -->
+                                string dashboardController = "";
+                                switch (userRole)
+                                {
+                                    case "Doctor":
+                                        dashboardController = "Doctor";
+                                        break;
+                                    case "Receptionist":
+                                        dashboardController = "Receptionist";
+                                        break;
+                                    default:
+                                        dashboardController = "Patient";
+                                        break;
+                                }
+                                <li class="nav-item">
+                                    <a class="btn btn-outline-light ms-2" asp-controller="@dashboardController" asp-action="Dashboard">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Account" asp-action="MyProfile">My Profile</a>
+                                </li>
+                                <li class="nav-item ms-lg-2">
+                                    <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Logout">Logout</a>
+                                </li>
+                            }
                         }
                         else
                         {
@@ -107,7 +115,7 @@
                 <!-- Quick Links -->
                 <div class="col-md-6 text-md-end">
                     <p class="mb-1">Quick Links</p>
-                    <a href="#" class="text-light me-3">Doctors</a>
+                    <a asp-controller="Home" asp-action="Doctors" class="text-light me-3">Doctors</a>
                     <a href="#" class="text-light">About</a>
                 </div>
             </div>
