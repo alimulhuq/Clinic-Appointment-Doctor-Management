@@ -15,7 +15,16 @@
                 <div class="card-body p-4 p-md-5">
 
                     <div class="text-center mb-4">
-                        <div class="display-1">👨‍⚕️</div>
+                        <div class="doctor-details-avatar mx-auto mb-3">
+                            @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                            {
+                                <img src="@Model.ProfilePicture" alt="@Model.FullName" />
+                            }
+                            else
+                            {
+                                <img src="/img/default-doctor.png" alt="@Model.FullName" />
+                            }
+                        </div>
                         <h2 class="fw-bold">@Model.FullName</h2>
                         <span class="badge bg-primary fs-6">@Model.Specialization</span>
                     </div>
@@ -92,3 +101,23 @@
         </div>
     </div>
 </div>
+
+<style>
+    .doctor-details-avatar {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid #e5e7eb;
+        background: #eef2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .doctor-details-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+</style>

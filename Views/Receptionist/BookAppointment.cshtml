@@ -43,6 +43,16 @@
                     <span asp-validation-for="DoctorId" class="text-danger"></span>
                 </div>
 
+                <!-- Optional: preview of selected doctor's avatar -->
+                <div id="doctorPreview" class="d-none align-items-center gap-3 mb-3 p-3 bg-light rounded">
+                    <div class="doctor-mini-avatar" id="doctorPreviewAvatar">
+                        <img src="/img/default-doctor.png" alt="Doctor" />
+                    </div>
+                    <div>
+                        <div class="fw-semibold" id="doctorPreviewName"></div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Appointment Date</label>
                     <input asp-for="AppointmentDate" type="text" class="form-control datepicker-booking"
@@ -93,73 +103,64 @@
             const form = document.getElementById('bookingForm');
 
             function validateDateTime() {
-                const raw = dateInput.value;   // Flatpickr stores "YYYY-MM-DD"
+                const raw = dateInput.value;
                 if (!raw) { clearError(); return true; }
-
                 const selectedDate = new Date(raw + 'T00:00:00');
                 const now = new Date();
-
-                // Weekend check (safety — Flatpickr already blocks them)
                 const day = selectedDate.getDay();
-                if (day === 0 || day === 6) {
-                    showError('Appointments are not available on weekends.');
-                    return false;
-                }
-
-                // Past date check
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                if (selectedDate < today) {
-                    showError('Please select a future date.');
-                    return false;
-                }
-
-                // Today + time in the past
+                if (day === 0 || day === 6) { showError('Appointments are not available on weekends.'); return false; }
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                if (selectedDate < today) { showError('Please select a future date.'); return false; }
                 if (selectedDate.getTime() === today.getTime() && timeSelect.value) {
                     const parts = timeSelect.value.split(':');
-                    const h = parseInt(parts[0]);
-                    const m = parseInt(parts[1]);
-                    const selectedTime = new Date();
-                    selectedTime.setHours(h, m, 0, 0);
-                    if (selectedTime < now) {
-                        showError('Please select a future time for today\'s appointment.');
-                        return false;
-                    }
+                    const h = parseInt(parts[0]); const m = parseInt(parts[1]);
+                    const selectedTime = new Date(); selectedTime.setHours(h, m, 0, 0);
+                    if (selectedTime < now) { showError('Please select a future time for today\'s appointment.'); return false; }
                 }
-
-                clearError();
-                return true;
+                clearError(); return true;
             }
-
             function showError(message) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
+                errorDiv.textContent = message; errorDiv.style.display = 'block';
                 dateInput.classList.add('is-invalid');
             }
-
             function clearError() {
-                errorDiv.textContent = '';
-                errorDiv.style.display = 'none';
+                errorDiv.textContent = ''; errorDiv.style.display = 'none';
                 dateInput.classList.remove('is-invalid');
             }
-
             dateInput.addEventListener('change', validateDateTime);
             timeSelect.addEventListener('change', validateDateTime);
-            form.addEventListener('submit', function (e) {
-                if (!validateDateTime()) {
-                    e.preventDefault();
-                }
-            });
+            form.addEventListener('submit', function (e) { if (!validateDateTime()) e.preventDefault(); });
+
+            // Live doctor avatar preview (uses JSON payload embedded by the controller)
+            const doctorsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                (doctors ?? new List<Clinic_Application_Doctor_Management.Models.Doctor>())
+                    .Select(d => new { id = d.Id, name = d.Name, pic = d.ProfilePicture ?? "" })
+                    .ToList()));
+            const doctorSelect = document.querySelector('select[name="DoctorId"]');
+            const previewWrap = document.getElementById('doctorPreview');
+            const previewImg = document.querySelector('#doctorPreviewAvatar img');
+            const previewName = document.getElementById('doctorPreviewName');
+            if (doctorSelect) {
+                doctorSelect.addEventListener('change', function () {
+                    const id = parseInt(doctorSelect.value);
+                    const found = doctorsData.find(x => x.id === id);
+                    if (!found) { previewWrap.classList.add('d-none'); previewWrap.classList.remove('d-flex'); return; }
+                    previewImg.src = found.pic && found.pic.length > 0 ? found.pic : '/img/default-doctor.png';
+                    previewName.textContent = found.name;
+                    previewWrap.classList.remove('d-none');
+                    previewWrap.classList.add('d-flex');
+                });
+            }
         })();
     </script>
     <style>
-        #appointmentDate.is-invalid {
-            border-color: #dc3545;
-            background-color: #f8d7da;
+        #appointmentDate.is-invalid { border-color: #dc3545; background-color: #f8d7da; }
+        .doctor-mini-avatar {
+            width: 56px; height: 56px; border-radius: 50%;
+            overflow: hidden; border: 2px solid #e5e7eb;
+            background: #eef2ff; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        /* Flatpickr match Bootstrap */
-        .flatpickr-input[readonly] { background-color: #fff; cursor: pointer; }
-        .flatpickr-calendar { border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.08); }
+        .doctor-mini-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     </style>
 }

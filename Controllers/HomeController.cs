@@ -54,6 +54,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Phone = d.Phone,
                 Qualification = d.Qualification,
                 Experience = d.Experience,
+                ConsultationFee = d.ConsultationFee,
+                ProfilePicture = d.ProfilePicture,
                 AvailableDays = string.Join(", ", d.Schedules.Where(s => s.IsActive).Select(s => s.DayOfWeek.ToString()).Distinct()),
                 AvailableTime = d.Schedules.Any(s => s.IsActive)
                     ? $"{d.Schedules.First(s => s.IsActive).StartTime.ToString(@"hh\:mm")} - {d.Schedules.First(s => s.IsActive).EndTime.ToString(@"hh\:mm")}"

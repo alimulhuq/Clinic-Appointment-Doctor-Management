@@ -13,11 +13,13 @@ namespace Clinic_Application_Doctor_Management.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _audit;
+        private readonly IImageService _imageService;
 
-        public DoctorController(ApplicationDbContext context, IAuditService audit)
+        public DoctorController(ApplicationDbContext context, IAuditService audit, IImageService imageService)
         {
             _context = context;
             _audit = audit;
+            _imageService = imageService;
         }
 
         // ---------------- DASHBOARD ----------------
@@ -125,6 +127,11 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .Where(p => p.DoctorId == doctor.Id)
                 .OrderByDescending(p => p.PrescriptionDate)
                 .ToListAsync();
+
+            ViewBag.MyPicture = doctor.ProfilePicture;
+            ViewBag.MyName = doctor.Name;
+            ViewBag.MySpecialization = doctor.Specialization;
+
             return View(prescriptions);
         }
 
@@ -231,7 +238,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Qualification = doctor.Qualification,
                 Experience = doctor.Experience,
                 ConsultationFee = doctor.ConsultationFee,
-                About = doctor.About ?? ""
+                About = doctor.About ?? "",
+                ExistingProfilePicture = doctor.ProfilePicture
             };
 
             var existing = await _context.Schedules
@@ -262,6 +270,26 @@ namespace Clinic_Application_Doctor_Management.Controllers
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == userEmail);
             if (doctor == null) return RedirectToAction("Profile", "Account");
+
+            // ---- Profile picture upload ----
+            if (model.ProfilePictureFile != null && model.ProfilePictureFile.Length > 0)
+            {
+                try
+                {
+                    var newUrl = await _imageService.SaveDoctorImageAsync(model.ProfilePictureFile, doctor.Id);
+                    if (!string.IsNullOrEmpty(newUrl))
+                    {
+                        _imageService.DeleteImage(doctor.ProfilePicture);
+                        doctor.ProfilePicture = newUrl;
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError("ProfilePictureFile", ex.Message);
+                    model.ExistingProfilePicture = doctor.ProfilePicture;
+                    return View(model);
+                }
+            }
 
             doctor.Name = model.FullName;
             doctor.Email = model.Email;

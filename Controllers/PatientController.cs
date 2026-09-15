@@ -87,6 +87,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Qualification = d.Qualification,
                 Experience = d.Experience,
                 ConsultationFee = d.ConsultationFee,
+                ProfilePicture = d.ProfilePicture,
                 AvailableDays = string.Join(", ", d.Schedules.Where(s => s.IsActive).Select(s => s.DayOfWeek.ToString()).Distinct()),
                 AvailableTime = d.Schedules.Any(s => s.IsActive)
                     ? $"{d.Schedules.First(s => s.IsActive).StartTime.ToString(@"hh\:mm")} - {d.Schedules.First(s => s.IsActive).EndTime.ToString(@"hh\:mm")}"
@@ -125,6 +126,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Qualification = doctor.Qualification,
                 Experience = doctor.Experience,
                 ConsultationFee = doctor.ConsultationFee,
+                ProfilePicture = doctor.ProfilePicture,
                 AvailableDays = string.Join(", ", doctor.Schedules.Where(s => s.IsActive).Select(s => s.DayOfWeek.ToString()).Distinct()),
                 AvailableTime = doctor.Schedules.Any(s => s.IsActive)
                     ? $"{doctor.Schedules.First(s => s.IsActive).StartTime.ToString(@"hh\:mm")} - {doctor.Schedules.First(s => s.IsActive).EndTime.ToString(@"hh\:mm")}"
@@ -313,14 +315,12 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
             if (bill.PaidAmount >= bill.Amount)
             {
-                // Fully paid
                 bill.Status = "Paid";
                 appointment.Status = "Confirmed";
                 TempData["SuccessMessage"] = "Payment complete. Appointment confirmed.";
             }
             else if (bill.PaidAmount > 0)
             {
-                // Partial — appointment is confirmed, balance still owed
                 bill.Status = "Partial";
                 appointment.Status = "Confirmed";
                 TempData["WarningMessage"] =
@@ -329,7 +329,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
             }
             else
             {
-                // No payment — appointment stays pending
                 bill.Status = "Unpaid";
                 appointment.Status = "Pending";
                 TempData["WarningMessage"] = "No payment received. Appointment remains pending.";
@@ -372,7 +371,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 return RedirectToAction("MyAppointments");
             }
 
-            // Mark cancelled — no refund
             appointment.Status = "Cancelled";
 
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == appointment.Id);

@@ -19,8 +19,31 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
-                    <form asp-action="Profile" asp-controller="Doctor" method="post">
+                    <form asp-action="Profile" asp-controller="Doctor" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                        <!-- Profile picture -->
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="doctor-avatar-preview">
+                                @if (!string.IsNullOrEmpty(Model.ExistingProfilePicture))
+                                {
+                                    <img id="avatarPreview" src="@Model.ExistingProfilePicture" alt="Profile picture" />
+                                }
+                                else
+                                {
+                                    <img id="avatarPreview" src="/img/default-doctor.png" alt="Default avatar" />
+                                }
+                            </div>
+                            <div class="flex-grow-1">
+                                <label asp-for="ProfilePictureFile" class="form-label fw-semibold"></label>
+                                <input asp-for="ProfilePictureFile" type="file" accept="image/*"
+                                       class="form-control" id="pictureInput" />
+                                <div class="form-text">
+                                    JPG, PNG, WEBP or GIF. Max 5 MB. Large images will be auto-resized.
+                                </div>
+                                <span asp-validation-for="ProfilePictureFile" class="text-danger small"></span>
+                            </div>
+                        </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -117,7 +140,16 @@
         <div class="col-lg-4 mt-4 mt-lg-0">
             <div class="card border-0 shadow-sm text-center">
                 <div class="card-body p-4">
-                    <div class="display-2 mb-3">👨‍⚕️</div>
+                    <div class="doctor-avatar-preview mx-auto mb-3">
+                        @if (!string.IsNullOrEmpty(Model.ExistingProfilePicture))
+                        {
+                            <img src="@Model.ExistingProfilePicture" alt="Profile picture" />
+                        }
+                        else
+                        {
+                            <img src="/img/default-doctor.png" alt="Default avatar" />
+                        }
+                    </div>
                     <h5 class="fw-bold">@Model.FullName</h5>
                     <p class="text-primary mb-2">@Model.Specialization</p>
                     <p class="text-muted">@Model.Qualification</p>
@@ -130,4 +162,40 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const input = document.getElementById('pictureInput');
+            const preview = document.getElementById('avatarPreview');
+            if (!input || !preview) return;
+
+            input.addEventListener('change', function () {
+                const file = input.files && input.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = e => preview.src = e.target.result;
+                reader.readAsDataURL(file);
+            });
+        })();
+    </script>
+
+    <style>
+        .doctor-avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #e5e7eb;
+        }
+        .doctor-avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
 }

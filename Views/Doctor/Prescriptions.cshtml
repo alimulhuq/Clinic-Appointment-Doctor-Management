@@ -2,31 +2,84 @@
 
 @{
     ViewData["Title"] = "Prescriptions";
+    var myPicture = ViewBag.MyPicture as string;
+    var myName = ViewBag.MyName as string ?? "";
+    var mySpecialization = ViewBag.MySpecialization as string ?? "";
 }
 
-<h2>My Prescriptions</h2>
-<a asp-action="CreatePrescription" class="btn btn-primary mb-3">Create Prescription</a>
+<div class="container py-4">
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Patient</th>
-            <th>Date</th>
-            <th>Medicines</th>
-            <th>Notes</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>@p.Patient?.FullName</td>
-                <td>@p.PrescriptionDate.ToShortDateString()</td>
-                <td>
-                    @string.Join(", ", p.Items.Select(i => $"{i.MedicineName} ({i.Dosage})"))
-                </td>
-                <td>@p.Notes</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <!-- Doctor header with own avatar -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <div class="doctor-header-avatar">
+                @if (!string.IsNullOrEmpty(myPicture))
+                {
+                    <img src="@myPicture" alt="@myName" />
+                }
+                else
+                {
+                    <img src="/img/default-doctor.png" alt="@myName" />
+                }
+            </div>
+            <div>
+                <h5 class="mb-1 fw-bold">@myName</h5>
+                <span class="badge bg-primary">@mySpecialization</span>
+            </div>
+        </div>
+        <a asp-action="CreatePrescription" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Create Prescription
+        </a>
+    </div>
+
+    <h2 class="fw-bold mb-4">My Prescriptions</h2>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Medicines</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var p in Model)
+                        {
+                            <tr>
+                                <td>@p.Patient?.FullName</td>
+                                <td>@p.PrescriptionDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @string.Join(", ", p.Items.Select(i => $"{i.MedicineName} ({i.Dosage})"))
+                                </td>
+                                <td>@p.Notes</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No prescriptions yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .doctor-header-avatar {
+        width: 72px; height: 72px; border-radius: 50%;
+        overflow: hidden; border: 3px solid #e5e7eb;
+        background: #eef2ff; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .doctor-header-avatar img {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+</style>

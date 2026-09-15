@@ -23,5 +23,7 @@ namespace ClinicManagementSystem.ViewModels
         public string AvailableDays { get; set; } = string.Empty;
 
         public string AvailableTime { get; set; } = string.Empty;
+
+        public string? ProfilePicture { get; set; }
     }
 }

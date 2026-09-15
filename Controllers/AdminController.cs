@@ -248,6 +248,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 PatientPhone = a.Patient != null ? a.Patient.Phone : "",
                 DoctorName = a.Doctor != null ? a.Doctor.Name : "—",
                 DoctorSpecialization = a.Doctor != null ? a.Doctor.Specialization : "",
+                DoctorProfilePicture = a.Doctor != null ? a.Doctor.ProfilePicture : null,
                 AppointmentDate = a.AppointmentDate,
                 AppointmentTime = a.AppointmentTime,
                 Reason = a.Reason ?? "",
@@ -280,6 +281,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 PatientPhone = appointment.Patient != null ? appointment.Patient.Phone : "",
                 DoctorName = appointment.Doctor != null ? appointment.Doctor.Name : "—",
                 DoctorSpecialization = appointment.Doctor != null ? appointment.Doctor.Specialization : "",
+                DoctorProfilePicture = appointment.Doctor != null ? appointment.Doctor.ProfilePicture : null,
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 Reason = appointment.Reason ?? "",
@@ -308,7 +310,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Experience = d.Experience,
                 Gender = d.Gender,
                 ConsultationFee = d.ConsultationFee,
-                About = d.About
+                About = d.About,
+                ProfilePicture = d.ProfilePicture
             }).ToList();
 
             return View(viewModels);
@@ -337,7 +340,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Experience = doctor.Experience,
                 Gender = doctor.Gender,
                 ConsultationFee = doctor.ConsultationFee,
-                About = doctor.About
+                About = doctor.About,
+                ProfilePicture = doctor.ProfilePicture
             };
 
             ViewBag.Schedules = doctor.Schedules.Where(s => s.IsActive).OrderBy(s => ((int)s.DayOfWeek + 1) % 7).ToList();
@@ -366,7 +370,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Experience = doctor.Experience,
                 Gender = doctor.Gender,
                 ConsultationFee = doctor.ConsultationFee,
-                About = doctor.About
+                About = doctor.About,
+                ProfilePicture = doctor.ProfilePicture
             });
         }
 
@@ -421,7 +426,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Experience = doctor.Experience,
                 Gender = doctor.Gender,
                 ConsultationFee = doctor.ConsultationFee,
-                About = doctor.About
+                About = doctor.About,
+                ProfilePicture = doctor.ProfilePicture
             });
         }
 

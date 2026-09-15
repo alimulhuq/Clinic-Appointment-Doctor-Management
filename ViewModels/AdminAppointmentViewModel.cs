@@ -25,6 +25,8 @@ namespace ClinicManagementSystem.ViewModels
         [Display(Name = "Specialization")]
         public string DoctorSpecialization { get; set; } = string.Empty;
 
+        public string? DoctorProfilePicture { get; set; }
+
         [Display(Name = "Appointment Date")]
         [DataType(DataType.Date)]
         public DateTime AppointmentDate { get; set; }

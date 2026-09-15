@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace ClinicManagementSystem.ViewModels
 {
@@ -30,6 +31,12 @@ namespace ClinicManagementSystem.ViewModels
 
         [Required]
         public string About { get; set; } = string.Empty;
+
+        // ---------- Profile picture ----------
+        [Display(Name = "Profile Picture")]
+        public IFormFile? ProfilePictureFile { get; set; }
+
+        public string? ExistingProfilePicture { get; set; }
 
         public List<DoctorDayScheduleInput> Schedule { get; set; } = new();
     }
