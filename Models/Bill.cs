@@ -1,8 +1,10 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Clinic_Application_Doctor_Management.Models{
-    public class Bill{
+namespace Clinic_Application_Doctor_Management.Models
+{
+    public class Bill
+    {
         public int Id { get; set; }
 
         [Required]
@@ -16,15 +18,21 @@ namespace Clinic_Application_Doctor_Management.Models{
         [Required]
         public decimal Amount { get; set; }
 
+        [Range(0, 1000000)]
+        public decimal PaidAmount { get; set; } = 0m;
+
         [StringLength(50)]
         public string? PaymentMethod { get; set; }
 
         [StringLength(50)]
-        public string? Status { get; set; } = "Pending";
+        public string? Status { get; set; } = "Unpaid";
 
         public DateTime BillDate { get; set; } = DateTime.Now;
 
         [StringLength(200)]
         public string? Description { get; set; }
+
+        // ---------- Helpers (not mapped) ----------
+        public decimal Balance => Amount - PaidAmount;
     }
 }

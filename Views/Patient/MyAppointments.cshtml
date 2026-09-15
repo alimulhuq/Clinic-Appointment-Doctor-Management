@@ -29,6 +29,7 @@
                         <th>Reason</th>
                         <th>Appointment</th>
                         <th>Payment</th>
+                        <th>Balance</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -76,6 +77,20 @@
                                 else
                                 {
                                     <span class="badge bg-danger">Unpaid</span>
+                                }
+                            </td>
+                            <td>
+                                @if (bill == null)
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                                else if (bill.Balance <= 0)
+                                {
+                                    <span class="text-success">—</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">@bill.Balance.ToString("0.00")৳</span>
                                 }
                             </td>
                             <td>

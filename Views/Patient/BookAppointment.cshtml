@@ -39,10 +39,11 @@
 
                         <div class="mb-3">
                             <label asp-for="AppointmentDate" class="form-label fw-semibold">Appointment Date</label>
-                            <input asp-for="AppointmentDate" type="date" class="form-control" id="appointmentDate"
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input asp-for="AppointmentDate" type="text" class="form-control datepicker-booking"
+                                   id="appointmentDate" placeholder="Select appointment date" autocomplete="off" />
                             <span asp-validation-for="AppointmentDate" class="text-danger"></span>
                             <div id="dateError" class="text-danger small mt-1" style="display:none;"></div>
+                            <div class="form-text">Weekends are not available. Earliest booking is today.</div>
                         </div>
 
                         <div class="mb-3">
@@ -88,28 +89,38 @@
             const form = document.getElementById('bookingForm');
 
             function validateDateTime() {
-                const selectedDate = new Date(dateInput.value);
+                const raw = dateInput.value;   // Flatpickr stores "Y-m-d"
+                if (!raw) { clearError(); return true; }
+
+                const selectedDate = new Date(raw + 'T00:00:00');
                 const now = new Date();
 
-                if (!dateInput.value) { clearError(); return true; }
-
-                if (selectedDate.toDateString() === now.toDateString()) {
-                    if (timeSelect.value) {
-                        const parts = timeSelect.value.split(':');
-                        const h = parseInt(parts[0]);
-                        const m = parseInt(parts[1]);
-                        const selectedTime = new Date();
-                        selectedTime.setHours(h, m, 0, 0);
-                        if (selectedTime < now) {
-                            showError('Please select a future time for today\'s appointment.');
-                            return false;
-                        }
-                    }
+                // Weekend check
+                const day = selectedDate.getDay();
+                if (day === 0 || day === 6) {
+                    showError('Appointments are not available on weekends.');
+                    return false;
                 }
 
-                if (selectedDate < now && selectedDate.toDateString() !== now.toDateString()) {
+                // Past date
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (selectedDate < today) {
                     showError('Please select a future date.');
                     return false;
+                }
+
+                // Today + time in the past
+                if (selectedDate.getTime() === today.getTime() && timeSelect.value) {
+                    const parts = timeSelect.value.split(':');
+                    const h = parseInt(parts[0]);
+                    const m = parseInt(parts[1]);
+                    const selectedTime = new Date();
+                    selectedTime.setHours(h, m, 0, 0);
+                    if (selectedTime < now) {
+                        showError('Please select a future time for today\'s appointment.');
+                        return false;
+                    }
                 }
 
                 clearError();
@@ -136,5 +147,9 @@
     </script>
     <style>
         #appointmentDate.is-invalid { border-color: #dc3545; background-color: #f8d7da; }
+
+        /* Make Flatpickr match Bootstrap inputs */
+        .flatpickr-input[readonly] { background-color: #fff; cursor: pointer; }
+        .flatpickr-calendar { border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.08); }
     </style>
 }

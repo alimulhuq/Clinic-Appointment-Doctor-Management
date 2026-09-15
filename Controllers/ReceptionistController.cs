@@ -105,6 +105,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 PatientId = model.PatientId,
                 AppointmentId = appointment.Id,
                 Amount = doctor.ConsultationFee,
+                PaidAmount = 0m,
                 Status = "Unpaid",
                 BillDate = DateTime.Now,
                 Description = $"Consultation fee for Dr. {doctor.Name} (booked by receptionist)"
@@ -117,6 +118,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Checkout", new { appointmentId = appointment.Id });
         }
 
+        // ---------- CHECKOUT (GET) ----------
         [HttpGet]
         public async Task<IActionResult> Checkout(int appointmentId)
         {
@@ -128,11 +130,13 @@ namespace Clinic_Application_Doctor_Management.Controllers
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == appointmentId);
             if (bill == null) return NotFound();
 
-            if (bill.Status == "Paid")
+            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
             {
                 TempData["SuccessMessage"] = "This appointment is already paid.";
                 return RedirectToAction("Appointments");
             }
+
+            var balance = bill.Amount - bill.PaidAmount;
 
             return View(new CheckoutViewModel
             {
@@ -143,13 +147,14 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime.ToString(@"hh\:mm"),
                 TotalFee = bill.Amount,
-                AlreadyPaid = 0,
-                AmountNow = bill.Amount,
-                PaymentMethod = "Cash",
+                AlreadyPaid = bill.PaidAmount,
+                AmountNow = balance,
+                PaymentMethod = bill.PaymentMethod ?? "Cash",
                 IsReceptionistFlow = true
             });
         }
 
+        // ---------- CHECKOUT (POST) ----------
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(CheckoutViewModel model)
         {
@@ -161,6 +166,12 @@ namespace Clinic_Application_Doctor_Management.Controllers
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == model.AppointmentId);
             if (bill == null) return NotFound();
 
+            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
+            {
+                TempData["SuccessMessage"] = "This appointment is already paid.";
+                return RedirectToAction("Appointments");
+            }
+
             if (!ModelState.IsValid)
             {
                 model.DoctorName = appointment.Doctor?.Name ?? "";
@@ -168,24 +179,31 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 model.AppointmentDate = appointment.AppointmentDate;
                 model.AppointmentTime = appointment.AppointmentTime.ToString(@"hh\:mm");
                 model.TotalFee = bill.Amount;
+                model.AlreadyPaid = bill.PaidAmount;
                 model.IsReceptionistFlow = true;
                 return View(model);
             }
 
-            decimal paid = model.AmountNow;
-            if (paid > bill.Amount) paid = bill.Amount;
+            var balance = bill.Amount - bill.PaidAmount;
+            decimal paidNow = model.AmountNow;
+            if (paidNow > balance) paidNow = balance;
 
-            if (paid >= bill.Amount)
+            bill.PaidAmount += paidNow;
+            bill.PaymentMethod = model.PaymentMethod;
+
+            if (bill.PaidAmount >= bill.Amount)
             {
                 bill.Status = "Paid";
                 appointment.Status = "Confirmed";
                 TempData["SuccessMessage"] = "Payment complete. Appointment confirmed.";
             }
-            else if (paid > 0)
+            else if (bill.PaidAmount > 0)
             {
                 bill.Status = "Partial";
                 appointment.Status = "Pending";
-                TempData["WarningMessage"] = $"Partial payment received ({paid:0.00}৳ of {bill.Amount:0.00}৳). Appointment pending until full payment.";
+                TempData["WarningMessage"] =
+                    $"Partial payment received ({paidNow:0.00}৳ of {bill.Amount:0.00}৳). " +
+                    $"Remaining balance: {bill.Amount - bill.PaidAmount:0.00}৳. Appointment pending until full payment.";
             }
             else
             {
@@ -194,13 +212,14 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 TempData["WarningMessage"] = "No payment received. Appointment remains pending.";
             }
 
-            bill.PaymentMethod = model.PaymentMethod;
             await _context.SaveChangesAsync();
-            await _audit.LogAsync("Payment", "Bill", bill.Id, $"Receptionist collected {paid:0.00}; status {bill.Status}");
+            await _audit.LogAsync("Payment", "Bill", bill.Id,
+                $"Receptionist collected {paidNow:0.00}; total paid {bill.PaidAmount:0.00}; status {bill.Status}");
 
             return RedirectToAction("Appointments");
         }
 
+        // ---------- HELPER ----------
         private async Task LoadBookingDropdownsAsync()
         {
             ViewBag.Patients = await _context.Patients

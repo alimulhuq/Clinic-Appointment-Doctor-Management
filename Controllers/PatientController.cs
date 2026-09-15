@@ -26,6 +26,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             _appointmentService = appointmentService;
         }
 
+        // ---------------- DASHBOARD ----------------
         public async Task<IActionResult> Dashboard()
         {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -36,15 +37,20 @@ namespace Clinic_Application_Doctor_Management.Controllers
             {
                 UpcomingAppointments = await _context.Appointments
                     .CountAsync(a => a.PatientId == patient!.Id && a.AppointmentDate >= DateTime.Today && a.Status != "Cancelled"),
+
                 TotalVisits = await _context.Appointments
                     .CountAsync(a => a.PatientId == patient!.Id && a.Status == "Completed"),
+
                 PendingBills = await _context.Bills
-                    .CountAsync(b => b.PatientId == patient!.Id && b.Status == "Pending"),
+                    .CountAsync(b => b.PatientId == patient!.Id && b.Status != "Paid"),
+
                 AvailableDoctors = await _context.Doctors.CountAsync(),
+
                 RecentAppointments = await _context.Appointments
                     .Include(a => a.Doctor)
                     .Where(a => a.PatientId == patient!.Id && a.AppointmentDate >= DateTime.Today && a.Status != "Cancelled")
-                    .OrderBy(a => a.AppointmentDate).ThenBy(a => a.AppointmentTime)
+                    .OrderBy(a => a.AppointmentDate)
+                    .ThenBy(a => a.AppointmentTime)
                     .Take(5)
                     .Select(a => new DoctorAppointmentViewModel
                     {
@@ -59,6 +65,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(model);
         }
 
+        // ---------------- DOCTORS LIST ----------------
         public async Task<IActionResult> Doctors(string search, string specialization)
         {
             var query = _context.Doctors.Include(d => d.Schedules).AsQueryable();
@@ -88,13 +95,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
             ViewBag.Specializations = await _context.Doctors
                 .Where(d => !string.IsNullOrEmpty(d.Specialization))
-                .Select(d => d.Specialization).Distinct().OrderBy(s => s).ToListAsync();
+                .Select(d => d.Specialization)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToListAsync();
+
             ViewBag.Search = search;
             ViewBag.SelectedSpecialization = specialization;
 
             return View(viewModels);
         }
 
+        // ---------------- DOCTOR DETAILS ----------------
         public async Task<IActionResult> DoctorDetails(int id)
         {
             var doctor = await _context.Doctors.Include(d => d.Schedules).FirstOrDefaultAsync(d => d.Id == id);
@@ -121,6 +133,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(viewModel);
         }
 
+        // ---------------- BOOK APPOINTMENT (GET) ----------------
         public async Task<IActionResult> BookAppointment(int id)
         {
             var doctor = await _context.Doctors.FindAsync(id);
@@ -141,6 +154,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(model);
         }
 
+        // ---------------- BOOK APPOINTMENT (POST) ----------------
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> BookAppointment(AppointmentViewModel model)
         {
@@ -192,6 +206,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 PatientId = patient.Id,
                 AppointmentId = appointment.Id,
                 Amount = doctor.ConsultationFee,
+                PaidAmount = 0m,
                 Status = "Unpaid",
                 BillDate = DateTime.Now,
                 Description = $"Consultation fee for Dr. {doctor.Name}"
@@ -204,6 +219,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Checkout", new { appointmentId = appointment.Id });
         }
 
+        // ---------------- CHECKOUT (GET) ----------------
         [HttpGet]
         public async Task<IActionResult> Checkout(int appointmentId)
         {
@@ -219,11 +235,13 @@ namespace Clinic_Application_Doctor_Management.Controllers
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == appointmentId);
             if (bill == null) return NotFound();
 
-            if (bill.Status == "Paid")
+            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
             {
                 TempData["SuccessMessage"] = "This appointment is already paid.";
                 return RedirectToAction("MyAppointments");
             }
+
+            var balance = bill.Amount - bill.PaidAmount;
 
             return View(new CheckoutViewModel
             {
@@ -234,13 +252,14 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime.ToString(@"hh\:mm"),
                 TotalFee = bill.Amount,
-                AlreadyPaid = 0,
-                AmountNow = bill.Amount,
-                PaymentMethod = "Cash",
+                AlreadyPaid = bill.PaidAmount,
+                AmountNow = balance,
+                PaymentMethod = bill.PaymentMethod ?? "Cash",
                 IsReceptionistFlow = false
             });
         }
 
+        // ---------------- CHECKOUT (POST) ----------------
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(CheckoutViewModel model)
         {
@@ -256,6 +275,12 @@ namespace Clinic_Application_Doctor_Management.Controllers
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == model.AppointmentId);
             if (bill == null) return NotFound();
 
+            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
+            {
+                TempData["SuccessMessage"] = "This appointment is already paid.";
+                return RedirectToAction("MyAppointments");
+            }
+
             if (!ModelState.IsValid)
             {
                 model.DoctorName = appointment.Doctor?.Name ?? "";
@@ -263,23 +288,30 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 model.AppointmentDate = appointment.AppointmentDate;
                 model.AppointmentTime = appointment.AppointmentTime.ToString(@"hh\:mm");
                 model.TotalFee = bill.Amount;
+                model.AlreadyPaid = bill.PaidAmount;
                 return View(model);
             }
 
-            decimal paid = model.AmountNow;
-            if (paid > bill.Amount) paid = bill.Amount;
+            var balance = bill.Amount - bill.PaidAmount;
+            decimal paidNow = model.AmountNow;
+            if (paidNow > balance) paidNow = balance;
 
-            if (paid >= bill.Amount)
+            bill.PaidAmount += paidNow;
+            bill.PaymentMethod = model.PaymentMethod;
+
+            if (bill.PaidAmount >= bill.Amount)
             {
                 bill.Status = "Paid";
                 appointment.Status = "Confirmed";
                 TempData["SuccessMessage"] = "Payment complete. Appointment confirmed.";
             }
-            else if (paid > 0)
+            else if (bill.PaidAmount > 0)
             {
                 bill.Status = "Partial";
                 appointment.Status = "Pending";
-                TempData["WarningMessage"] = $"Partial payment received ({paid:0.00}৳ of {bill.Amount:0.00}৳). Appointment pending until full payment.";
+                TempData["WarningMessage"] =
+                    $"Partial payment received ({paidNow:0.00}৳ of {bill.Amount:0.00}৳). " +
+                    $"Remaining balance: {bill.Amount - bill.PaidAmount:0.00}৳. Appointment pending until full payment.";
             }
             else
             {
@@ -288,13 +320,14 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 TempData["WarningMessage"] = "No payment received. Appointment remains pending.";
             }
 
-            bill.PaymentMethod = model.PaymentMethod;
             await _context.SaveChangesAsync();
-            await _audit.LogAsync("Payment", "Bill", bill.Id, $"Paid {paid:0.00}; status {bill.Status}");
+            await _audit.LogAsync("Payment", "Bill", bill.Id,
+                $"Paid {paidNow:0.00}; total paid {bill.PaidAmount:0.00}; status {bill.Status}");
 
             return RedirectToAction("MyAppointments");
         }
 
+        // ---------------- HELPER ----------------
         private async Task ReloadDoctorInfoAsync(AppointmentViewModel model)
         {
             var doctor = await _context.Doctors.FindAsync(model.DoctorId);
@@ -305,6 +338,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             }
         }
 
+        // ---------------- MY APPOINTMENTS ----------------
         public async Task<IActionResult> MyAppointments()
         {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -325,6 +359,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(appointments);
         }
 
+        // ---------------- PRESCRIPTIONS ----------------
         public async Task<IActionResult> Prescriptions()
         {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -339,6 +374,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(prescriptions);
         }
 
+        // ---------------- BILLS ----------------
         public async Task<IActionResult> Bills()
         {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -353,6 +389,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(bills);
         }
 
+        // ---------------- PROFILE (GET) ----------------
         public async Task<IActionResult> Profile()
         {
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -376,6 +413,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(model);
         }
 
+        // ---------------- PROFILE (POST) ----------------
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(PatientProfileViewModel model)
         {
@@ -402,6 +440,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Profile");
         }
 
+        // ---------------- CHANGE PASSWORD ----------------
         [HttpGet]
         public IActionResult ChangePassword() => View();
 

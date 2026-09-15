@@ -18,7 +18,8 @@ namespace ClinicManagementSystem.ViewModels
         [Display(Name = "Already Paid")]
         public decimal AlreadyPaid { get; set; }
 
-        public decimal Balance => TotalFee - AlreadyPaid;
+        [Display(Name = "Balance Due")]
+        public decimal BalanceDue => TotalFee - AlreadyPaid;
 
         [Required(ErrorMessage = "Please enter the amount you want to pay.")]
         [Range(0.01, 1000000, ErrorMessage = "Amount must be greater than 0.")]

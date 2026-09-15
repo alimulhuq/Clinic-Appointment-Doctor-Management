@@ -71,6 +71,10 @@ namespace Clinic_Application_Doctor_Management.Data
                 .Property(b => b.Amount)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Bill>()
+                .Property(b => b.PaidAmount)
+                .HasPrecision(18, 2);
+
             modelBuilder.Entity<Doctor>()
                 .Property(d => d.ConsultationFee)
                 .HasPrecision(18, 2);

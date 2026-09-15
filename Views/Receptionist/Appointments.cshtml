@@ -37,13 +37,14 @@
                         <th>Reason</th>
                         <th>Appointment</th>
                         <th>Payment</th>
+                        <th>Balance</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.Count == 0)
                     {
-                        <tr><td colspan="8" class="text-center text-muted py-4">No appointments booked yet.</td></tr>
+                        <tr><td colspan="9" class="text-center text-muted py-4">No appointments booked yet.</td></tr>
                     }
                     @foreach (var a in Model)
                     {
@@ -89,6 +90,20 @@
                                 else
                                 {
                                     <span class="badge bg-danger">Unpaid</span>
+                                }
+                            </td>
+                            <td>
+                                @if (bill == null)
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                                else if (bill.Balance <= 0)
+                                {
+                                    <span class="text-success">—</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">@bill.Balance.ToString("0.00")৳</span>
                                 }
                             </td>
                             <td>
