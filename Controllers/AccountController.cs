@@ -16,8 +16,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _audit;
 
-        public AccountController(ApplicationDbContext context, IAuditService audit)
-        {
+        public AccountController(ApplicationDbContext context, IAuditService audit){
             _context = context;
             _audit = audit;
         }
@@ -28,19 +27,16 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
-        {
+        public async Task<IActionResult> Login(LoginViewModel model){
             if (!ModelState.IsValid) return View(model);
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
-            {
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash)){
                 ModelState.AddModelError("", "Invalid email or password.");
                 return View(model);
             }
 
-            var claims = new List<Claim>
-            {
+            var claims = new List<Claim>{
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Role, user.Role),
@@ -53,8 +49,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
             await _audit.LogAsync("Login", "User", user.Id, "User logged in");
 
-            return user.Role switch
-            {
+            return user.Role switch{
                 "Admin" => RedirectToAction("Dashboard", "Admin"),
                 "Doctor" => RedirectToAction("Dashboard", "Doctor"),
                 "Receptionist" => RedirectToAction("Dashboard", "Receptionist"),
@@ -68,21 +63,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AdminLogin(LoginViewModel model)
-        {
+        public async Task<IActionResult> AdminLogin(LoginViewModel model){
             if (!ModelState.IsValid) return View(model);
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
 
             // Check if user exists, password matches, AND role is Admin
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash) || user.Role != "Admin")
-            {
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash) || user.Role != "Admin"){
                 ModelState.AddModelError("", "Invalid admin credentials.");
                 return View(model);
             }
 
-            var claims = new List<Claim>
-            {
+            var claims = new List<Claim>{
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Role, user.Role),
@@ -104,18 +96,15 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
+        public async Task<IActionResult> Register(RegisterViewModel model){
             if (!ModelState.IsValid) return View(model);
 
-            if (await _context.Users.AnyAsync(u => u.Email == model.Email))
-            {
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email)){
                 ModelState.AddModelError("Email", "This email is already registered.");
                 return View(model);
             }
 
-            var patient = new Patient
-            {
+            var patient = new Patient{
                 FullName = model.FullName,
                 Phone = model.Phone,
                 Email = model.Email,
@@ -127,8 +116,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             _context.Patients.Add(patient);
             await _context.SaveChangesAsync();
 
-            var user = new User
-            {
+            var user = new User{
                 Email = model.Email,
                 FullName = model.FullName,
                 Phone = model.Phone,
@@ -145,8 +133,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
         }
 
         // ---------- LOGOUT ----------
-        public async Task<IActionResult> Logout()
-        {
+        public async Task<IActionResult> Logout(){
             var userIdClaim = User.FindFirst("UserID");
             int? userId = userIdClaim != null ? int.Parse(userIdClaim.Value) : (int?)null;
             await _audit.LogAsync("Logout", "User", userId, "User logged out");
@@ -158,11 +145,9 @@ namespace Clinic_Application_Doctor_Management.Controllers
         public IActionResult AccessDenied() => View();
 
         // ---------- PROFILE REDIRECT ----------
-        public IActionResult MyProfile()
-        {
+        public IActionResult MyProfile(){
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            return role switch
-            {
+            return role switch{
                 "Admin" => RedirectToAction("Profile", "Admin"),
                 "Doctor" => RedirectToAction("Profile", "Doctor"),
                 "Receptionist" => RedirectToAction("Profile", "Receptionist"),

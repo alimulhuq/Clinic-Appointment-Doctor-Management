@@ -7,26 +7,139 @@
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
     <!-- Our CSS -->
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="/ClinicManagementSystem.styles.css" asp-append-version="true" />
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <!-- ========== NAVBAR ========== -->
+@{
+    var isAdmin = User.Identity?.IsAuthenticated == true
+        && User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Admin";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+}
+
+@if (isAdmin)
+{
+    <!-- ========== ADMIN LAYOUT: SIDEBAR ========== -->
+    <div class="d-flex flex-grow-1 admin-layout">
+        <!-- Sidebar -->
+        <nav id="adminSidebar" class="admin-sidebar d-flex flex-column">
+            <div class="sidebar-brand">
+                <span class="brand-icon"></span>
+                <span class="brand-text">ClinicCare</span>
+            </div>
+
+            <ul class="nav flex-column sidebar-nav flex-grow-1">
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link @(currentController == "Admin" && currentAction == "Dashboard" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Dashboard">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link"
+                       asp-controller="Admin" asp-action="Dashboard"
+                       asp-fragment="all-bookings">
+                        <i class="bi bi-calendar2-check"></i>
+                        <span>All Patient Bookings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link @(currentAction == "Patients" || currentAction == "PatientDetails" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Patients">
+                        <i class="bi bi-people"></i>
+                        <span>Patients</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link @(currentAction == "AddDoctor" ? "active" : "")"
+                       asp-controller="Admin" asp-action="AddDoctor">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Add Doctor</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link @(currentAction == "AddReceptionist" ? "active" : "")"
+                       asp-controller="Admin" asp-action="AddReceptionist">
+                        <i class="bi bi-person-plus"></i>
+                        <span>Add Receptionist</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link @(currentAction == "Profile" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Profile">
+                        <i class="bi bi-person"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav flex-column sidebar-nav sidebar-bottom">
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link @(currentAction == "ChangePassword" ? "active" : "")"
+                       asp-controller="Admin" asp-action="ChangePassword">
+                        <i class="bi bi-gear"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link" asp-controller="Account" asp-action="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Log Out</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main content area -->
+        <div class="admin-content flex-grow-1 d-flex flex-column">
+            <main class="flex-grow-1">
+                @RenderBody()
+            </main>
+
+            <!-- ========== FOOTER ========== -->
+            <footer class="admin-footer mt-auto">
+                <div class="container-fluid px-4 py-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-1">ClinicCare</h5>
+                            <p class="mb-0 text-white-50 small">
+                                Simple and reliable clinic management for patients, doctors and staff.
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                            <p class="mb-1 small text-white-50">Quick Links</p>
+                            <a asp-controller="Home" asp-action="Doctors" class="text-white me-3 text-decoration-underline">Doctors</a>
+                            <a href="#" class="text-white text-decoration-underline">About</a>
+                        </div>
+                    </div>
+                    <hr class="border-secondary my-3" />
+                    <div class="text-center">
+                        <small class="text-white-50">&copy; 2026 ClinicCare. All Rights Reserved.</small>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+}
+else
+{
+    <!-- ========== PUBLIC / NON-ADMIN LAYOUT: TOP NAVBAR ========== -->
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
             <div class="container">
-                <!-- Logo / Website Name -->
                 <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">ClinicCare</a>
 
-                <!-- Mobile Menu Button -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
                         aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- Navigation -->
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
@@ -42,46 +155,21 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-
-                            if (userRole == "Admin")
+                            string dashboardController = userRole switch
                             {
-                                <!-- Admin sees ONLY Dashboard and Profile -->
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Admin" asp-action="Profile">Profile</a>
-                                </li>
-                                <li class="nav-item ms-lg-2">
-                                    <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Logout">Logout</a>
-                                </li>
-                            }
-                            else
-                            {
-                                <!-- For Doctor, Receptionist, Patient -->
-                                string dashboardController = "";
-                                switch (userRole)
-                                {
-                                    case "Doctor":
-                                        dashboardController = "Doctor";
-                                        break;
-                                    case "Receptionist":
-                                        dashboardController = "Receptionist";
-                                        break;
-                                    default:
-                                        dashboardController = "Patient";
-                                        break;
-                                }
-                                <li class="nav-item">
-                                    <a class="btn btn-outline-light ms-2" asp-controller="@dashboardController" asp-action="Dashboard">Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Account" asp-action="MyProfile">My Profile</a>
-                                </li>
-                                <li class="nav-item ms-lg-2">
-                                    <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Logout">Logout</a>
-                                </li>
-                            }
+                                "Doctor" => "Doctor",
+                                "Receptionist" => "Receptionist",
+                                _ => "Patient"
+                            };
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light ms-2" asp-controller="@dashboardController" asp-action="Dashboard">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="MyProfile">My Profile</a>
+                            </li>
+                            <li class="nav-item ms-lg-2">
+                                <a class="btn btn-light text-primary px-4" asp-controller="Account" asp-action="Logout">Logout</a>
+                            </li>
                         }
                         else
                         {
@@ -95,16 +183,13 @@
         </nav>
     </header>
 
-    <!-- ========== MAIN CONTENT ========== -->
     <main class="flex-grow-1">
         @RenderBody()
     </main>
 
-    <!-- ========== FOOTER ========== -->
     <footer class="bg-dark text-light mt-5">
         <div class="container py-4">
             <div class="row">
-                <!-- Clinic Information -->
                 <div class="col-md-6">
                     <h5>ClinicCare</h5>
                     <p class="text-light">
@@ -112,7 +197,6 @@
                         for patients, doctors and staff.
                     </p>
                 </div>
-                <!-- Quick Links -->
                 <div class="col-md-6 text-md-end">
                     <p class="mb-1">Quick Links</p>
                     <a asp-controller="Home" asp-action="Doctors" class="text-light me-3">Doctors</a>
@@ -120,14 +204,13 @@
                 </div>
             </div>
             <hr />
-            <!-- Copyright -->
             <div class="text-center">
                 <small>&copy; 2026 ClinicCare. All Rights Reserved.</small>
             </div>
         </div>
     </footer>
+}
 
-    <!-- ========== JAVASCRIPT ========== -->
     <script src="/lib/jquery/dist/jquery.min.js"></script>
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/site.js" asp-append-version="true"></script>

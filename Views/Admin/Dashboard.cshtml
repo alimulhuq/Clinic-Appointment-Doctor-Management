@@ -4,119 +4,241 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container py-4">
-    <h2 class="fw-bold mb-4">Admin Dashboard</h2>
+<div class="portal-page" style="width: 100%>
+    <!-- Top header bar -->
+    <div class="portal-topbar d-flex justify-content-between align-items-start flex-wrap gap-3 mb-2"">
+        <div>
+            <div class="portal-breadcrumb">CLINICAL PORTAL</div>
+            <div class="portal-subbreadcrumb">SYSTEM ADMIN / CLINICCARE</div>
+            <h1 class="portal-title mb-0">Clinic Operations &amp; Management</h1>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="portal-period-tabs">
+                <button type="button" class="period-tab">Today</button>
+                <button type="button" class="period-tab active">Last 7 Days</button>
+                <button type="button" class="period-tab">This Month</button>
+            </div>
+            <a asp-action="AddReceptionist" class="btn btn-portal-outline">
+                <i class="bi bi-building me-1"></i> Add Receptionist
+            </a>
+            <a asp-action="AddDoctor" class="btn btn-portal-primary">
+                <i class="bi bi-person-plus me-1"></i> Add New Doctor
+            </a>
+        </div>
+    </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success border-0 shadow-sm mb-3">@TempData["SuccessMessage"]</div>
     }
 
-    <!-- Statistics Cards -->
+    <!-- Stat cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <h6 class="text-muted">Total Doctors</h6>
-                <h3 class="fw-bold">@Model.TotalDoctors</h3>
+        <div class="col-6 col-lg-3">
+            <div class="portal-stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="portal-stat-label">Total Staff Doctors</span>
+                    <span class="portal-stat-icon"><i class="bi bi-heart-pulse"></i></span>
+                </div>
+                <div class="portal-stat-value">@Model.TotalDoctors</div>
+                <div class="portal-stat-meta text-success">
+                    <i class="bi bi-graph-up-arrow"></i> Active staff
+                </div>
+                <div class="portal-stat-bar">
+                    <div class="portal-stat-bar-fill" style="width: 75%"></div>
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <h6 class="text-muted">Total Receptionists</h6>
-                <h3 class="fw-bold">@Model.TotalReceptionists</h3>
+        <div class="col-6 col-lg-3">
+            <div class="portal-stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="portal-stat-label">Registered Patients</span>
+                    <span class="portal-stat-icon"><i class="bi bi-people"></i></span>
+                </div>
+                <div class="portal-stat-value">@Model.TotalPatients.ToString("N0")</div>
+                <div class="portal-stat-meta text-success">
+                    <i class="bi bi-arrow-up"></i> In system
+                </div>
+                <div class="portal-stat-bar">
+                    <div class="portal-stat-bar-fill" style="width: 88%"></div>
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <h6 class="text-muted">Total Patients</h6>
-                <h3 class="fw-bold">@Model.TotalPatients</h3>
+        <div class="col-6 col-lg-3">
+            <div class="portal-stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="portal-stat-label">Total Appointments</span>
+                    <span class="portal-stat-icon"><i class="bi bi-calendar2-check"></i></span>
+                </div>
+                <div class="portal-stat-value">@Model.TotalAppointments</div>
+                <div class="portal-stat-meta text-muted">
+                    All bookings
+                </div>
+                <div class="portal-stat-bar">
+                    <div class="portal-stat-bar-fill" style="width: 62%"></div>
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm text-center p-3">
-                <h6 class="text-muted">Total Appointments</h6>
-                <h3 class="fw-bold">@Model.TotalAppointments</h3>
+        <div class="col-6 col-lg-3">
+            <div class="portal-stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="portal-stat-label">Receptionists</span>
+                    <span class="portal-stat-icon"><i class="bi bi-person-badge"></i></span>
+                </div>
+                <div class="portal-stat-value">@Model.TotalReceptionists</div>
+                <div class="portal-stat-meta text-primary">
+                    <span class="dot-active"></span> Staff on duty
+                </div>
+                <div class="portal-stat-bar">
+                    <div class="portal-stat-bar-fill" style="width: 100%"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">Quick Actions</div>
-        <div class="card-body d-flex gap-2">
-            <a asp-action="AddDoctor" class="btn btn-outline-primary w-100">Add Doctor</a>
-            <a asp-action="AddReceptionist" class="btn btn-outline-primary w-100">Add Receptionist</a>
-            <a asp-action="Patients" class="btn btn-outline-primary w-100">View Patients</a>
+    <!-- Charts row -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="portal-card h-100">
+                <div class="portal-card-header">
+                    <div>
+                        <h5 class="mb-0 fw-semibold">Weekly Patient Consultation Volume</h5>
+                        <p class="text-muted small mb-0">Last 7 days — completed vs cancelled from database</p>
+                    </div>
+                    <div class="portal-legend">
+                        <span><i class="legend-dot legend-completed"></i> Completed</span>
+                        <span><i class="legend-dot legend-cancelled"></i> Cancelled/Rescheduled</span>
+                    </div>
+                </div>
+                <div class="portal-card-body">
+                    <canvas id="weeklyChart" height="220"></canvas>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <!-- All Patient Bookings -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-0">
-            <h5 class="fw-bold mb-0">All Patient Bookings</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Patient</th>
-                            <th>Doctor</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Reason</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.AllAppointments.Any())
-                        {
-                            foreach (var appt in Model.AllAppointments)
-                            {
-                                <tr>
-                                    <td>
-                                        <a asp-action="PatientDetails" asp-route-patientId="@appt.PatientId" class="text-decoration-none">
-                                            @(appt.Patient?.FullName ?? "Unknown")
-                                        </a>
-                                    </td>
-                                    <td>@(appt.Doctor?.Name ?? "Unknown")</td>
-                                    <td>@appt.AppointmentDate.ToString("dd MMM yyyy")</td>
-                                    <td>@appt.AppointmentTime.ToString(@"hh\:mm tt")</td>
-                                    <td>@appt.Reason</td>
-                                    <td>
-                                        @if (appt.Status == "Confirmed")
-                                        {
-                                            <span class="badge bg-success">Confirmed</span>
-                                        }
-                                        else if (appt.Status == "Pending")
-                                        {
-                                            <span class="badge bg-warning text-dark">Pending</span>
-                                        }
-                                        else if (appt.Status == "Rejected")
-                                        {
-                                            <span class="badge bg-danger">Rejected</span>
-                                        }
-                                        else if (appt.Status == "Completed")
-                                        {
-                                            <span class="badge bg-primary">Completed</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">@appt.Status</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
+        <div class="col-lg-4">
+            <div class="portal-card h-100">
+                <div class="portal-card-header">
+                    <div>
+                        <h5 class="mb-0 fw-semibold">Appointment Status</h5>
+                        <p class="text-muted small mb-0">Distribution of all patient bookings</p>
+                    </div>
+                </div>
+                <div class="portal-card-body text-center">
+                    <div class="donut-wrap mx-auto">
+                        <canvas id="statusChart"></canvas>
+                        <div class="donut-center">
+                            <div class="donut-number">@Model.TotalAppointments</div>
+                            <div class="donut-label">Total</div>
+                        </div>
+                    </div>
+                    <ul class="portal-status-list list-unstyled mt-3 mb-0 text-start">
+                        @{
+                            var confirmed = Model.AllAppointments.Count(a => a.Status == "Confirmed");
+                            var pending = Model.AllAppointments.Count(a => a.Status == "Pending");
+                            var completed = Model.AllAppointments.Count(a => a.Status == "Completed");
+                            var rejected = Model.AllAppointments.Count(a => a.Status == "Rejected");
+                            var other = Model.AllAppointments.Count - confirmed - pending - completed - rejected;
                         }
-                        else
-                        {
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">No appointments yet.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                        <li><span class="status-dot" style="background:#2563eb"></span> Confirmed <span class="ms-auto fw-medium">@confirmed</span></li>
+                        <li><span class="status-dot" style="background:#0ea5e9"></span> Pending <span class="ms-auto fw-medium">@pending</span></li>
+                        <li><span class="status-dot" style="background:#64748b"></span> Completed <span class="ms-auto fw-medium">@completed</span></li>
+                        <li><span class="status-dot" style="background:#94a3b8"></span> Rejected / Other <span class="ms-auto fw-medium">@(rejected + other)</span></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    // Weekly bar chart — data from database (last 7 days)
+    const weeklyCompleted = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyCompleted));
+    const weeklyCancelled = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyCancelled));
+
+    const weeklyCtx = document.getElementById('weeklyChart');
+    if (weeklyCtx) {
+        new Chart(weeklyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                    {
+                        label: 'Completed',
+                        data: weeklyCompleted,
+                        backgroundColor: '#1e40af',
+                        borderRadius: 4,
+                        barPercentage: 0.55
+                    },
+                    {
+                        label: 'Cancelled/Rescheduled',
+                        data: weeklyCancelled,
+                        backgroundColor: '#93c5fd',
+                        borderRadius: 4,
+                        barPercentage: 0.55
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#64748b', font: { size: 12 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            stepSize: 1,
+                            precision: 0
+                        },
+                        grid: { color: '#f1f5f9' }
+                    }
+                }
+            }
+        });
+    }
+
+    // Status donut — from database
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        const confirmed = @Model.AllAppointments.Count(a => a.Status == "Confirmed");
+        const pending = @Model.AllAppointments.Count(a => a.Status == "Pending");
+        const completed = @Model.AllAppointments.Count(a => a.Status == "Completed");
+        const rejected = @Model.AllAppointments.Count(a => a.Status == "Rejected");
+        const other = Math.max(0, @Model.AllAppointments.Count - confirmed - pending - completed - rejected);
+        const total = confirmed + pending + completed + rejected + other;
+
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confirmed', 'Pending', 'Completed', 'Rejected/Other'],
+                datasets: [{
+                    data: total > 0 ? [confirmed, pending, completed, rejected + other] : [1, 0, 0, 0],
+                    backgroundColor: ['#2563eb', '#0ea5e9', '#64748b', '#94a3b8'],
+                    borderWidth: 0,
+                    cutout: '72%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: total > 0 }
+                }
+            }
+        });
+    }
+})();
+</script>
+}

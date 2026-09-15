@@ -24,23 +24,49 @@ namespace Clinic_Application_Doctor_Management.Controllers
         // ---------- DASHBOARD ----------
         public async Task<IActionResult> Dashboard()
         {
+            var allAppointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            // Weekly volume: last 7 days (including today), grouped by day of week (Mon=0 ... Sun=6)
+            var today = DateTime.Today;
+            var weekStart = today.AddDays(-6);
+            var weekAppointments = allAppointments
+                .Where(a => a.AppointmentDate.Date >= weekStart && a.AppointmentDate.Date <= today)
+                .ToList();
+
+            var weeklyCompleted = new int[7];
+            var weeklyCancelled = new int[7];
+
+            foreach (var appt in weekAppointments)
+            {
+                // DayOfWeek: Sunday=0 ... Saturday=6 → convert to Mon=0 ... Sun=6
+                int dayIndex = ((int)appt.AppointmentDate.DayOfWeek + 6) % 7;
+
+                if (appt.Status == "Completed" || appt.Status == "Confirmed")
+                    weeklyCompleted[dayIndex]++;
+                else if (appt.Status == "Rejected" || appt.Status == "Cancelled" || appt.Status == "Rescheduled")
+                    weeklyCancelled[dayIndex]++;
+            }
+
             var model = new AdminDashboardViewModel
             {
                 TotalDoctors = await _context.Doctors.CountAsync(),
                 TotalReceptionists = await _context.Users.CountAsync(u => u.Role == "Receptionist"),
                 TotalPatients = await _context.Patients.CountAsync(),
-                TotalAppointments = await _context.Appointments.CountAsync(),
+                TotalAppointments = allAppointments.Count,
 
-                AllAppointments = await _context.Appointments
-                    .Include(a => a.Patient)
-                    .Include(a => a.Doctor)
-                    .OrderByDescending(a => a.AppointmentDate)
-                    .ThenBy(a => a.AppointmentTime)
-                    .ToListAsync(),
+                AllAppointments = allAppointments,
 
                 AllPatients = await _context.Patients
                     .OrderByDescending(p => p.CreatedAt)
-                    .ToListAsync()
+                    .ToListAsync(),
+
+                WeeklyCompleted = weeklyCompleted,
+                WeeklyCancelled = weeklyCancelled
             };
             return View(model);
         }
