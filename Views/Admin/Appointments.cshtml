@@ -1,0 +1,72 @@
+@model List<ClinicManagementSystem.ViewModels.AdminAppointmentViewModel>
+
+@{
+    ViewData["Title"] = "All Appointments";
+}
+
+<div class="container py-4">
+    <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm mb-3">← Back to Dashboard</a>
+
+    <h2 class="fw-bold mb-4">All Appointments</h2>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            foreach (var appt in Model)
+                            {
+                                var statusClass = appt.Status switch
+                                {
+                                    "Completed" or "Confirmed" => "bg-success",
+                                    "Pending" => "bg-warning text-dark",
+                                    "Cancelled" or "Rejected" => "bg-danger",
+                                    "Rescheduled" => "bg-info text-dark",
+                                    _ => "bg-secondary"
+                                };
+                                <tr>
+                                    <td>@appt.AppointmentCode</td>
+                                    <td>
+                                        @appt.PatientName
+                                        <div class="text-muted small">@appt.PatientCode</div>
+                                    </td>
+                                    <td>
+                                        @appt.DoctorName
+                                        <div class="text-muted small">@appt.DoctorSpecialization</div>
+                                    </td>
+                                    <td>@appt.AppointmentDate.ToString("dd MMM yyyy")</td>
+                                    <td>@DateTime.Today.Add(appt.AppointmentTime).ToString("hh:mm tt")</td>
+                                    <td><span class="badge @statusClass">@appt.Status</span></td>
+                                    <td>
+                                        <a asp-action="AppointmentDetails"
+                                           asp-route-appointmentId="@appt.Id"
+                                           class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No appointments found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

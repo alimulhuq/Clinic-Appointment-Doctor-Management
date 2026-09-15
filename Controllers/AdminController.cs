@@ -10,13 +10,11 @@ using BCrypt.Net;
 namespace Clinic_Application_Doctor_Management.Controllers
 {
     [Authorize(Roles = "Admin")]
-    public class AdminController : Controller
-    {
+    public class AdminController : Controller{
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _audit;
 
-        public AdminController(ApplicationDbContext context, IAuditService audit)
-        {
+        public AdminController(ApplicationDbContext context, IAuditService audit){
             _context = context;
             _audit = audit;
         }
@@ -99,35 +97,69 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(viewModels);
         }
 
-        // ---------- PATIENT DETAILS (admin view, no password) ----------
-        public async Task<IActionResult> PatientDetails(int patientId)
+        // ---------- ALL APPOINTMENTS LIST (admin view) ----------
+        public async Task<IActionResult> Appointments()
         {
-            var patient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.Id == patientId);
-            if (patient == null)
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            var viewModels = appointments.Select(a => new AdminAppointmentViewModel
             {
-                TempData["ErrorMessage"] = "Patient not found.";
-                return RedirectToAction("Dashboard");
+                Id = a.Id,
+                AppointmentCode = $"A{a.Id:D4}",
+                PatientName = a.Patient != null ? a.Patient.FullName : "—",
+                PatientCode = a.Patient != null ? $"P{a.Patient.Id:D3}" : "",
+                PatientPhone = a.Patient != null ? a.Patient.Phone : "",
+                DoctorName = a.Doctor != null ? a.Doctor.Name : "—",
+                DoctorSpecialization = a.Doctor != null ? a.Doctor.Specialization : "",
+                AppointmentDate = a.AppointmentDate,
+                AppointmentTime = a.AppointmentTime,
+                Reason = a.Reason ?? "",
+                Status = a.Status,
+                DurationMinutes = a.DurationMinutes,
+                CreatedAt = a.CreatedAt
+            }).ToList();
+
+            ViewBag.CurrentAction = "Appointments";
+            return View(viewModels);
+        }
+
+        // ---------- APPOINTMENT DETAILS (admin view) ----------
+        public async Task<IActionResult> AppointmentDetails(int appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
             }
 
-            var model = new AdminPatientDetailsViewModel
+            var model = new AdminAppointmentViewModel
             {
-                Id = patient.Id,
-                PatientCode = $"P{patient.Id:D3}",
-                FullName = patient.FullName,
-                Email = patient.Email ?? "",
-                Phone = patient.Phone,
-                Age = patient.Age,
-                Gender = patient.Gender,
-                Address = patient.Address ?? "",
-                MedicalHistory = patient.MedicalHistory ?? "",
-                Allergies = patient.Allergies ?? "None recorded",
-                BloodGroup = patient.BloodGroup ?? "",
-                EmergencyContact = patient.EmergencyContact ?? "",
-                EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
-                CreatedAt = patient.CreatedAt
+                Id = appointment.Id,
+                AppointmentCode = $"A{appointment.Id:D4}",
+                PatientName = appointment.Patient != null ? appointment.Patient.FullName : "—",
+                PatientCode = appointment.Patient != null ? $"P{appointment.Patient.Id:D3}" : "",
+                PatientPhone = appointment.Patient != null ? appointment.Patient.Phone : "",
+                DoctorName = appointment.Doctor != null ? appointment.Doctor.Name : "—",
+                DoctorSpecialization = appointment.Doctor != null ? appointment.Doctor.Specialization : "",
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                Reason = appointment.Reason ?? "",
+                Status = appointment.Status,
+                DurationMinutes = appointment.DurationMinutes,
+                CreatedAt = appointment.CreatedAt
             };
 
+            ViewBag.CurrentAction = "AppointmentDetails";
             return View(model);
         }
 

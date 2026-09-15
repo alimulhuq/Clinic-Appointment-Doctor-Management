@@ -22,8 +22,8 @@ namespace ClinicManagementSystem.ViewModels{
 
         // All patient bookings (appointments) - used for status donut
         public List<Appointment> AllAppointments { get; set; } = new List<Appointment>();
-
         public List<Patient> AllPatients { get; set; } = new List<Patient>();
+        // public List<Receptionist> AllReceptionists { get; set; } = new List<Receptionist>();
 
         // Weekly chart data (Mon–Sun), from database
         public int[] WeeklyCompleted { get; set; } = new int[7];

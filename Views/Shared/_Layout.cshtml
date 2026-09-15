@@ -46,6 +46,13 @@
                         <span>Patients</span>
                     </a>
                 </li>
+               <li class="nav-item">
+                    <a class="nav-link admin-nav-link @(currentAction == "Appointments" || currentAction == "AppointmentDetails" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Appointments">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Appointments</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link admin-nav-link @(currentAction == "AddDoctor" ? "active" : "")"
                        asp-controller="Admin" asp-action="AddDoctor">
