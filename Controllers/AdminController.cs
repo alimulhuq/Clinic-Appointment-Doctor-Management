@@ -56,25 +56,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 TotalReceptionists = await _context.Users.CountAsync(u => u.Role == "Receptionist"),
                 TotalPatients = await _context.Patients.CountAsync(),
                 TotalAppointments = allAppointments.Count,
-
                 AllAppointments = allAppointments,
-
-                AllPatients = await _context.Patients
-                    .OrderByDescending(p => p.CreatedAt)
-                    .ToListAsync(),
-
+                AllPatients = await _context.Patients.OrderByDescending(p => p.CreatedAt).ToListAsync(),
                 WeeklyCompleted = weeklyCompleted,
                 WeeklyCancelled = weeklyCancelled
             };
             return View(model);
         }
 
-        // ---------- ALL PATIENTS LIST ----------
+        // ---------- PATIENTS ----------
         public async Task<IActionResult> Patients()
         {
-            var patients = await _context.Patients
-                .OrderByDescending(p => p.CreatedAt)
-                .ToListAsync();
+            var patients = await _context.Patients.OrderByDescending(p => p.CreatedAt).ToListAsync();
 
             var viewModels = patients.Select(p => new AdminPatientDetailsViewModel
             {
@@ -97,11 +90,9 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(viewModels);
         }
 
-        // ---------- PATIENT DETAILS ----------
         public async Task<IActionResult> PatientDetails(int patientId)
         {
-            var patient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.Id == patientId);
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == patientId);
             if (patient == null)
             {
                 TempData["ErrorMessage"] = "Patient not found.";
@@ -125,18 +116,15 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
                 CreatedAt = patient.CreatedAt
             };
-
             return View(model);
         }
 
-        // ---------- ALL APPOINTMENTS ----------
+        // ---------- APPOINTMENTS ----------
         public async Task<IActionResult> Appointments()
         {
             var appointments = await _context.Appointments
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
-                .OrderByDescending(a => a.AppointmentDate)
-                .ThenBy(a => a.AppointmentTime)
+                .Include(a => a.Patient).Include(a => a.Doctor)
+                .OrderByDescending(a => a.AppointmentDate).ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
 
             var viewModels = appointments.Select(a => new AdminAppointmentViewModel
@@ -155,18 +143,14 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 DurationMinutes = a.DurationMinutes,
                 CreatedAt = a.CreatedAt
             }).ToList();
-
             return View(viewModels);
         }
 
-        // ---------- APPOINTMENT DETAILS ----------
         public async Task<IActionResult> AppointmentDetails(int appointmentId)
         {
             var appointment = await _context.Appointments
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
+                .Include(a => a.Patient).Include(a => a.Doctor)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
-
             if (appointment == null)
             {
                 TempData["ErrorMessage"] = "Appointment not found.";
@@ -189,11 +173,179 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 DurationMinutes = appointment.DurationMinutes,
                 CreatedAt = appointment.CreatedAt
             };
+            return View(model);
+        }
+
+        // ---------- DOCTORS ----------
+        public async Task<IActionResult> Doctors()
+        {
+            var doctors = await _context.Doctors
+                .OrderByDescending(d => d.Id)
+                .ToListAsync();
+
+            var viewModels = doctors.Select(d => new DoctorManagementViewModel
+            {
+                Id = d.Id,
+                FullName = d.Name,
+                Email = d.Email,
+                Phone = d.Phone,
+                Specialization = d.Specialization,
+                Qualification = d.Qualification,
+                Experience = d.Experience,
+                Gender = d.Gender,
+                ConsultationFee = d.ConsultationFee,
+                About = d.About
+            }).ToList();
+
+            return View(viewModels);
+        }
+
+        public async Task<IActionResult> DoctorDetails(int id)
+        {
+            var doctor = await _context.Doctors
+                .Include(d => d.Schedules)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (doctor == null)
+            {
+                TempData["ErrorMessage"] = "Doctor not found.";
+                return RedirectToAction("Doctors");
+            }
+
+            var model = new DoctorManagementViewModel
+            {
+                Id = doctor.Id,
+                FullName = doctor.Name,
+                Email = doctor.Email,
+                Phone = doctor.Phone,
+                Specialization = doctor.Specialization,
+                Qualification = doctor.Qualification,
+                Experience = doctor.Experience,
+                Gender = doctor.Gender,
+                ConsultationFee = doctor.ConsultationFee,
+                About = doctor.About
+            };
+
+            ViewBag.Schedules = doctor.Schedules.Where(s => s.IsActive).OrderBy(s => ((int)s.DayOfWeek + 1) % 7).ToList();
 
             return View(model);
         }
 
-        // ---------- ALL RECEPTIONISTS ----------
+        [HttpGet]
+        public async Task<IActionResult> EditDoctor(int id)
+        {
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null)
+            {
+                TempData["ErrorMessage"] = "Doctor not found.";
+                return RedirectToAction("Doctors");
+            }
+
+            return View(new DoctorManagementViewModel
+            {
+                Id = doctor.Id,
+                FullName = doctor.Name,
+                Email = doctor.Email,
+                Phone = doctor.Phone,
+                Specialization = doctor.Specialization,
+                Qualification = doctor.Qualification,
+                Experience = doctor.Experience,
+                Gender = doctor.Gender,
+                ConsultationFee = doctor.ConsultationFee,
+                About = doctor.About
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditDoctor(DoctorManagementViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var doctor = await _context.Doctors.FindAsync(model.Id);
+            if (doctor == null)
+            {
+                TempData["ErrorMessage"] = "Doctor not found.";
+                return RedirectToAction("Doctors");
+            }
+
+            doctor.Name = model.FullName;
+            doctor.Email = model.Email;
+            doctor.Phone = model.Phone;
+            doctor.Specialization = model.Specialization;
+            doctor.Qualification = model.Qualification;
+            doctor.Experience = model.Experience;
+            doctor.Gender = model.Gender;
+            doctor.ConsultationFee = model.ConsultationFee;
+            doctor.About = model.About;
+
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("Update", "Doctor", doctor.Id, $"Doctor {doctor.Name} updated");
+
+            TempData["SuccessMessage"] = $"Doctor {model.FullName} updated successfully.";
+            return RedirectToAction("Doctors");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteDoctor(int id)
+        {
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null)
+            {
+                TempData["ErrorMessage"] = "Doctor not found.";
+                return RedirectToAction("Doctors");
+            }
+
+            return View(new DoctorManagementViewModel
+            {
+                Id = doctor.Id,
+                FullName = doctor.Name,
+                Email = doctor.Email,
+                Phone = doctor.Phone,
+                Specialization = doctor.Specialization,
+                Qualification = doctor.Qualification,
+                Experience = doctor.Experience,
+                Gender = doctor.Gender,
+                ConsultationFee = doctor.ConsultationFee,
+                About = doctor.About
+            });
+        }
+
+        [HttpPost, ActionName("DeleteDoctor")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteDoctorConfirmed(int id)
+        {
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null)
+            {
+                TempData["ErrorMessage"] = "Doctor not found.";
+                return RedirectToAction("Doctors");
+            }
+
+            // Block delete if the doctor has any appointments
+            var hasAppointments = await _context.Appointments.AnyAsync(a => a.DoctorId == id);
+            if (hasAppointments)
+            {
+                TempData["ErrorMessage"] = "Cannot delete: this doctor has existing appointments.";
+                return RedirectToAction("Doctors");
+            }
+
+            // Remove any schedules first (FK cascade may or may not handle this)
+            var schedules = await _context.Schedules.Where(s => s.DoctorId == id).ToListAsync();
+            if (schedules.Any())
+            {
+                _context.Schedules.RemoveRange(schedules);
+            }
+
+            _context.Doctors.Remove(doctor);
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("Delete", "Doctor", id, $"Doctor {doctor.Name} deleted");
+
+            TempData["SuccessMessage"] = $"Doctor {doctor.Name} removed successfully.";
+            return RedirectToAction("Doctors");
+        }
+
+        // ---------- RECEPTIONISTS ----------
         public async Task<IActionResult> Receptionists()
         {
             var receptionists = await _context.Users
@@ -213,31 +365,26 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(viewModels);
         }
 
-        // ---------- RECEPTIONIST DETAILS ----------
         public async Task<IActionResult> ReceptionistDetails(int id)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
-
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Receptionist not found.";
                 return RedirectToAction("Receptionists");
             }
 
-            var model = new ReceptionistManagementViewModel
+            return View(new ReceptionistManagementViewModel
             {
                 Id = user.Id,
                 FullName = user.FullName,
                 Username = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone
-            };
-
-            return View(model);
+            });
         }
 
-        // ---------- ADD RECEPTIONIST ----------
         [HttpGet]
         public IActionResult AddReceptionist() => View(new ReceptionistManagementViewModel());
 
@@ -245,15 +392,10 @@ namespace Clinic_Application_Doctor_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddReceptionist(ReceptionistManagementViewModel model)
         {
-            // Password is required on Add
             if (string.IsNullOrWhiteSpace(model.Password))
-            {
                 ModelState.AddModelError("Password", "Password is required.");
-            }
             if (string.IsNullOrWhiteSpace(model.ConfirmPassword))
-            {
                 ModelState.AddModelError("ConfirmPassword", "Please confirm the password.");
-            }
 
             if (!ModelState.IsValid) return View(model);
 
@@ -281,29 +423,25 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Receptionists");
         }
 
-        // ---------- EDIT RECEPTIONIST ----------
         [HttpGet]
         public async Task<IActionResult> EditReceptionist(int id)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
-
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Receptionist not found.";
                 return RedirectToAction("Receptionists");
             }
 
-            var model = new ReceptionistManagementViewModel
+            return View(new ReceptionistManagementViewModel
             {
                 Id = user.Id,
                 FullName = user.FullName,
                 Username = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone
-            };
-
-            return View(model);
+            });
         }
 
         [HttpPost]
@@ -320,7 +458,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == model.Id && u.Role == "Receptionist");
-
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Receptionist not found.";
@@ -338,9 +475,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             user.Phone = model.Phone;
 
             if (!string.IsNullOrWhiteSpace(model.Password))
-            {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
-            }
 
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Update", "Receptionist", user.Id, $"Receptionist {user.FullName} updated");
@@ -349,29 +484,25 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Receptionists");
         }
 
-        // ---------- DELETE RECEPTIONIST ----------
         [HttpGet]
         public async Task<IActionResult> DeleteReceptionist(int id)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
-
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Receptionist not found.";
                 return RedirectToAction("Receptionists");
             }
 
-            var model = new ReceptionistManagementViewModel
+            return View(new ReceptionistManagementViewModel
             {
                 Id = user.Id,
                 FullName = user.FullName,
                 Username = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone
-            };
-
-            return View(model);
+            });
         }
 
         [HttpPost, ActionName("DeleteReceptionist")]
@@ -380,7 +511,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
-
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Receptionist not found.";
@@ -412,13 +542,16 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 Phone = model.Phone,
                 Specialization = model.Specialization,
                 Qualification = model.Qualification,
-                Experience = model.Experience
+                Experience = model.Experience,
+                Gender = model.Gender,
+                ConsultationFee = model.ConsultationFee,
+                About = model.About
             };
             _context.Doctors.Add(doctor);
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Create", "Doctor", doctor.Id, $"Doctor {doctor.Name} added");
             TempData["SuccessMessage"] = $"Doctor {model.FullName} added successfully.";
-            return RedirectToAction("Dashboard");
+            return RedirectToAction("Doctors");
         }
 
         // ---------- PROFILE ----------
@@ -429,13 +562,12 @@ namespace Clinic_Application_Doctor_Management.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var model = new UserProfileViewModel
+            return View(new UserProfileViewModel
             {
                 FullName = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone
-            };
-            return View(model);
+            });
         }
 
         [HttpPost]

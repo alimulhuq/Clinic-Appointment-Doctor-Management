@@ -19,14 +19,12 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 
-    // Sidebar shows ONLY when (1) user is Admin AND (2) the request is routed to AdminController
     var isAdmin = role == "Admin"
         && string.Equals(currentController, "Admin", StringComparison.OrdinalIgnoreCase);
 }
 
 @if (isAdmin)
 {
-    <!-- ========== ADMIN PAGES: SIDEBAR LAYOUT ========== -->
     <div class="admin-layout">
         <nav id="adminSidebar" class="admin-sidebar d-flex flex-column">
             <div class="sidebar-brand">
@@ -57,10 +55,10 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link admin-nav-link @(currentAction == "AddDoctor" ? "active" : "")"
-                       asp-controller="Admin" asp-action="AddDoctor">
+                    <a class="nav-link admin-nav-link @(currentAction == "Doctors" || currentAction == "AddDoctor" || currentAction == "DoctorDetails" || currentAction == "EditDoctor" || currentAction == "DeleteDoctor" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Doctors">
                         <i class="bi bi-person-badge"></i>
-                        <span>Add Doctor</span>
+                        <span>Doctors</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -116,7 +114,6 @@
 }
 else
 {
-    <!-- ========== NON-ADMIN: TOP NAVBAR ========== -->
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
             <div class="container">

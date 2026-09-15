@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Clinic_Application_Doctor_Management.Models;
 
-namespace Clinic_Application_Doctor_Management.Data{
-    public class ApplicationDbContext : DbContext{
+namespace Clinic_Application_Doctor_Management.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<Doctor> Doctors { get; set; }
@@ -15,8 +17,8 @@ namespace Clinic_Application_Doctor_Management.Data{
         public DbSet<Bill> Bills { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder){
-            // Relationships
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<Appointment>()
                 .HasOne(a => a.Doctor)
                 .WithMany(d => d.Appointments)
@@ -69,7 +71,10 @@ namespace Clinic_Application_Doctor_Management.Data{
                 .Property(b => b.Amount)
                 .HasPrecision(18, 2);
 
-            // ========== NEW INDEXES for performance ==========
+            modelBuilder.Entity<Doctor>()
+                .Property(d => d.ConsultationFee)
+                .HasPrecision(18, 2);
+
             modelBuilder.Entity<Appointment>()
                 .HasIndex(a => new { a.PatientId, a.AppointmentDate, a.AppointmentTime })
                 .HasDatabaseName("IX_Appointment_Patient_DateTime");

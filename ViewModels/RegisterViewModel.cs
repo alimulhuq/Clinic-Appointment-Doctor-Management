@@ -10,7 +10,6 @@ namespace ClinicManagementSystem.ViewModels
         [Display(Name = "Register As")]
         public string SelectedRole { get; set; } = "Patient";
 
-        // ---------- SHARED ----------
         [Required(ErrorMessage = "Full name is required.")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Name must be between 3 and 50 characters.")]
         [Display(Name = "Full Name")]
@@ -48,6 +47,8 @@ namespace ClinicManagementSystem.ViewModels
         public string? Address { get; set; }
 
         // ---------- DOCTOR ----------
+        public string? DoctorGender { get; set; }
+
         public string? Specialization { get; set; }
         public string? Qualification { get; set; }
 
@@ -55,10 +56,13 @@ namespace ClinicManagementSystem.ViewModels
         [Display(Name = "Experience (years)")]
         public int? Experience { get; set; }
 
+        [Range(0, 1000000, ErrorMessage = "Invalid fee.")]
+        [Display(Name = "Consultation Fee (৳)")]
+        public decimal? ConsultationFee { get; set; }
+
         [StringLength(500)]
         public string? About { get; set; }
 
-        // ---------- DOCTOR SCHEDULE (optional) ----------
         public List<DoctorRegistrationScheduleInput> Schedule { get; set; } = new();
     }
 }

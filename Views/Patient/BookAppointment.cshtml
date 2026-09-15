@@ -15,7 +15,6 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
 
-                    <!-- Doctor Information -->
                     <div class="bg-light rounded p-3 mb-4">
                         <div class="d-flex align-items-center">
                             <div class="fs-1 me-3">👨‍⚕️</div>
@@ -38,7 +37,6 @@
                         <input asp-for="DoctorName" type="hidden" />
                         <input asp-for="Specialization" type="hidden" />
 
-                        <!-- Date -->
                         <div class="mb-3">
                             <label asp-for="AppointmentDate" class="form-label fw-semibold">Appointment Date</label>
                             <input asp-for="AppointmentDate" type="date" class="form-control" id="appointmentDate"
@@ -47,7 +45,6 @@
                             <div id="dateError" class="text-danger small mt-1" style="display:none;"></div>
                         </div>
 
-                        <!-- Time -->
                         <div class="mb-3">
                             <label asp-for="AppointmentTime" class="form-label fw-semibold">Appointment Time</label>
                             <select asp-for="AppointmentTime" class="form-select" id="appointmentTime">
@@ -64,17 +61,15 @@
                             <span asp-validation-for="AppointmentTime" class="text-danger"></span>
                         </div>
 
-                        <!-- Reason -->
                         <div class="mb-4">
                             <label asp-for="Reason" class="form-label fw-semibold">Reason for Visit</label>
                             <textarea asp-for="Reason" class="form-control" rows="4" placeholder="Briefly describe the reason for your visit"></textarea>
                             <span asp-validation-for="Reason" class="text-danger"></span>
                         </div>
 
-                        <!-- Buttons -->
                         <div class="d-flex gap-2">
                             <a asp-action="Doctors" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary flex-grow-1">Confirm Appointment</button>
+                            <button type="submit" class="btn btn-primary flex-grow-1">Continue to Payment</button>
                         </div>
                     </form>
                 </div>
@@ -96,19 +91,13 @@
                 const selectedDate = new Date(dateInput.value);
                 const now = new Date();
 
-                if (!dateInput.value) {
-                    clearError();
-                    return true;
-                }
+                if (!dateInput.value) { clearError(); return true; }
 
-                // If selected date is today and time is past, block
                 if (selectedDate.toDateString() === now.toDateString()) {
                     if (timeSelect.value) {
-                        // Value format is "HH:mm" now (24-hour)
                         const parts = timeSelect.value.split(':');
                         const h = parseInt(parts[0]);
                         const m = parseInt(parts[1]);
-
                         const selectedTime = new Date();
                         selectedTime.setHours(h, m, 0, 0);
                         if (selectedTime < now) {
@@ -118,7 +107,6 @@
                     }
                 }
 
-                // If date is in the past
                 if (selectedDate < now && selectedDate.toDateString() !== now.toDateString()) {
                     showError('Please select a future date.');
                     return false;
@@ -133,7 +121,6 @@
                 errorDiv.style.display = 'block';
                 dateInput.classList.add('is-invalid');
             }
-
             function clearError() {
                 errorDiv.textContent = '';
                 errorDiv.style.display = 'none';
@@ -143,18 +130,11 @@
             dateInput.addEventListener('change', validateDateTime);
             timeSelect.addEventListener('change', validateDateTime);
             form.addEventListener('submit', function (e) {
-                if (!validateDateTime()) {
-                    e.preventDefault();
-                }
+                if (!validateDateTime()) e.preventDefault();
             });
-
-            // Don't validate on page load
         })();
     </script>
     <style>
-        #appointmentDate.is-invalid {
-            border-color: #dc3545;
-            background-color: #f8d7da;
-        }
+        #appointmentDate.is-invalid { border-color: #dc3545; background-color: #f8d7da; }
     </style>
 }

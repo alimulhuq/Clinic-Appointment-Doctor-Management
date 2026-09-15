@@ -1,0 +1,88 @@
+@model ClinicManagementSystem.ViewModels.DoctorManagementViewModel
+
+@{
+    ViewData["Title"] = "Edit Doctor";
+}
+
+<div class="container py-4">
+    <a asp-action="Doctors" class="btn btn-outline-secondary btn-sm mb-3">← Back to Doctors</a>
+
+    <h3 class="mb-4">Edit Doctor</h3>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="EditDoctor" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Gender" class="form-label"></label>
+                        <select asp-for="Gender" class="form-select">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Specialization" class="form-label"></label>
+                        <input asp-for="Specialization" class="form-control" />
+                        <span asp-validation-for="Specialization" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Qualification" class="form-label"></label>
+                        <input asp-for="Qualification" class="form-control" />
+                        <span asp-validation-for="Qualification" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Experience" class="form-label"></label>
+                        <input asp-for="Experience" type="number" class="form-control" />
+                        <span asp-validation-for="Experience" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ConsultationFee" class="form-label"></label>
+                        <input asp-for="ConsultationFee" type="number" step="0.01" min="0" class="form-control" />
+                        <span asp-validation-for="ConsultationFee" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label asp-for="About" class="form-label">About</label>
+                        <textarea asp-for="About" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="About" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-action="Doctors" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

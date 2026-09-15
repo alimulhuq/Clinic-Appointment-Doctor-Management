@@ -10,6 +10,7 @@
         <div class="card-body">
             <form asp-action="AddDoctor" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
                 <div class="mb-3">
                     <label asp-for="FullName" class="form-label"></label>
                     <input asp-for="FullName" class="form-control" />
@@ -39,6 +40,11 @@
                     <label asp-for="Experience" class="form-label"></label>
                     <input asp-for="Experience" class="form-control" type="number" />
                     <span asp-validation-for="Experience" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ConsultationFee" class="form-label"></label>
+                    <input asp-for="ConsultationFee" type="number" step="0.01" min="0" class="form-control" />
+                    <span asp-validation-for="ConsultationFee" class="text-danger"></span>
                 </div>
                 <button type="submit" class="btn btn-primary">Save Doctor</button>
                 <a asp-action="Dashboard" class="btn btn-outline-secondary">Cancel</a>

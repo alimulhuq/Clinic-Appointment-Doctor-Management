@@ -18,6 +18,8 @@ namespace ClinicManagementSystem.ViewModels
 
         public string Phone { get; set; } = string.Empty;
 
+        public decimal ConsultationFee { get; set; }
+
         public string AvailableDays { get; set; } = string.Empty;
 
         public string AvailableTime { get; set; } = string.Empty;

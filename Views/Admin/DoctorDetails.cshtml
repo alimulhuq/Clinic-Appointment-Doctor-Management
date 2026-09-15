@@ -1,0 +1,89 @@
+@model ClinicManagementSystem.ViewModels.DoctorManagementViewModel
+
+@{
+    ViewData["Title"] = "Doctor Details";
+    var schedules = ViewBag.Schedules as List<Clinic_Application_Doctor_Management.Models.Schedule>
+                    ?? new List<Clinic_Application_Doctor_Management.Models.Schedule>();
+}
+
+<div class="container py-4">
+    <a asp-action="Doctors" class="btn btn-outline-secondary btn-sm mb-3">← Back to Doctors</a>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Doctor Details</h4>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Full Name</h6>
+                    <p class="fw-bold">@Model.FullName</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Gender</h6>
+                    <p>@(string.IsNullOrEmpty(Model.Gender) ? "—" : Model.Gender)</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Email</h6>
+                    <p>@Model.Email</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Phone</h6>
+                    <p>@Model.Phone</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Specialization</h6>
+                    <p>@Model.Specialization</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Qualification</h6>
+                    <p>@Model.Qualification</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Experience</h6>
+                    <p>@Model.Experience years</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Consultation Fee</h6>
+                    <p class="fw-bold">@Model.ConsultationFee.ToString("0.00")৳</p>
+                </div>
+                <div class="col-12 mb-3">
+                    <h6 class="text-muted">About</h6>
+                    <p>@(string.IsNullOrWhiteSpace(Model.About) ? "—" : Model.About)</p>
+                </div>
+            </div>
+
+            <hr />
+
+            <h6 class="text-muted mb-3">Weekly Schedule</h6>
+            @if (schedules.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Start</th>
+                                <th>End</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in schedules)
+                            {
+                                <tr>
+                                    <td>@s.DayOfWeek</td>
+                                    <td>@s.StartTime.ToString(@"hh\:mm")</td>
+                                    <td>@s.EndTime.ToString(@"hh\:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No schedule set yet.</p>
+            }
+        </div>
+    </div>
+</div>

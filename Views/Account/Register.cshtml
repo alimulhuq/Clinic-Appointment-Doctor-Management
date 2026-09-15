@@ -17,7 +17,7 @@
                         <p class="text-muted">Register as a Patient or a Doctor.</p>
                     </div>
 
-                    <form asp-action="Register" asp-controller="Account" method="post">
+                    <form asp-action="Register" asp-controller="Account" method="post" id="registerForm">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
                         <!-- Role selector -->
@@ -42,28 +42,32 @@
                             <span asp-validation-for="SelectedRole" class="text-danger small"></span>
                         </div>
 
-                        <!-- Shared -->
+                        <!-- Shared fields (always submitted) -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="FullName" class="form-label"></label>
                                 <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
                                 <span asp-validation-for="FullName" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Email" class="form-label"></label>
                                 <input asp-for="Email" class="form-control" placeholder="Enter email" />
                                 <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Phone" class="form-label"></label>
                                 <input asp-for="Phone" class="form-control" placeholder="Enter phone number" />
                                 <span asp-validation-for="Phone" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Password" class="form-label"></label>
                                 <input asp-for="Password" class="form-control" placeholder="Minimum 6 characters" />
                                 <span asp-validation-for="Password" class="text-danger small"></span>
                             </div>
+
                             <div class="col-md-6 mb-3">
                                 <label asp-for="ConfirmPassword" class="form-label"></label>
                                 <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter password" />
@@ -71,7 +75,7 @@
                             </div>
                         </div>
 
-                        <!-- Patient section -->
+                        <!-- ================= PATIENT SECTION ================= -->
                         <div id="patientFields" class="reg-section">
                             <hr class="my-3" />
                             <h6 class="text-muted mb-3">Patient Information</h6>
@@ -81,6 +85,7 @@
                                     <input asp-for="DateOfBirth" type="date" class="form-control" />
                                     <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
                                 </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label asp-for="Gender" class="form-label"></label>
                                     <select asp-for="Gender" class="form-select">
@@ -91,10 +96,12 @@
                                     </select>
                                     <span asp-validation-for="Gender" class="text-danger small"></span>
                                 </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label asp-for="GuardianName" class="form-label"></label>
                                     <input asp-for="GuardianName" class="form-control" placeholder="Optional" />
                                 </div>
+
                                 <div class="col-12 mb-3">
                                     <label asp-for="Address" class="form-label"></label>
                                     <textarea asp-for="Address" class="form-control" rows="2"></textarea>
@@ -103,36 +110,45 @@
                             </div>
                         </div>
 
-                        <!-- Doctor section -->
+                        <!-- ================= DOCTOR SECTION ================= -->
                         <div id="doctorFields" class="reg-section" style="display:none;">
                             <hr class="my-3" />
                             <h6 class="text-muted mb-3">Doctor Information</h6>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label asp-for="Gender" class="form-label"></label>
-                                    <select asp-for="Gender" class="form-select">
+                                    <label class="form-label">Gender</label>
+                                    <select name="DoctorGender" class="form-select">
                                         <option value="">Select Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
                                     </select>
-                                    <span asp-validation-for="Gender" class="text-danger small"></span>
                                 </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label asp-for="Specialization" class="form-label"></label>
                                     <input asp-for="Specialization" class="form-control" placeholder="e.g. Cardiologist" />
                                     <span asp-validation-for="Specialization" class="text-danger small"></span>
                                 </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label asp-for="Qualification" class="form-label"></label>
                                     <input asp-for="Qualification" class="form-control" placeholder="e.g. MBBS, FCPS" />
                                     <span asp-validation-for="Qualification" class="text-danger small"></span>
                                 </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label asp-for="Experience" class="form-label"></label>
                                     <input asp-for="Experience" type="number" min="0" max="60" class="form-control" />
                                     <span asp-validation-for="Experience" class="text-danger small"></span>
                                 </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="ConsultationFee" class="form-label"></label>
+                                    <input asp-for="ConsultationFee" type="number" step="0.01" min="0" class="form-control" placeholder="e.g. 500" />
+                                    <span asp-validation-for="ConsultationFee" class="text-danger small"></span>
+                                </div>
+
                                 <div class="col-12 mb-3">
                                     <label asp-for="About" class="form-label"></label>
                                     <textarea asp-for="About" class="form-control" rows="3"></textarea>
@@ -140,7 +156,7 @@
                                 </div>
                             </div>
 
-                            <!-- Collapsible schedule editor -->
+                            <!-- Schedule editor -->
                             <div class="mb-3">
                                 <button class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center"
                                         type="button"
@@ -154,7 +170,7 @@
 
                                 <div class="collapse mt-3" id="scheduleSection">
                                     <div class="alert alert-info small mb-3">
-                                        Tick the days you're available and set your hours. Leave blank if you'll add this later.
+                                        Tick the days you're available and set your hours.
                                     </div>
 
                                     <div class="table-responsive">
@@ -173,30 +189,21 @@
                                                     var day = days[i];
                                                     <tr>
                                                         <td>
-                                                            <input type="checkbox"
-                                                                   class="form-check-input"
-                                                                   name="Schedule[@i].IsEnabled"
-                                                                   value="true"
-                                                                   id="sched_@i" />
-                                                            <input type="hidden"
-                                                                   name="Schedule[@i].IsEnabled"
-                                                                   value="false" />
+                                                            <input type="checkbox" class="form-check-input"
+                                                                   name="Schedule[@i].IsEnabled" value="true" id="sched_@i" />
+                                                            <input type="hidden" name="Schedule[@i].IsEnabled" value="false" />
                                                         </td>
                                                         <td>
                                                             <label for="sched_@i" class="form-check-label fw-semibold">@day</label>
                                                             <input type="hidden" name="Schedule[@i].Day" value="@day" />
                                                         </td>
                                                         <td>
-                                                            <input type="time"
-                                                                   class="form-control form-control-sm"
-                                                                   name="Schedule[@i].StartTime"
-                                                                   value="09:00" />
+                                                            <input type="time" class="form-control form-control-sm"
+                                                                   name="Schedule[@i].StartTime" value="09:00" />
                                                         </td>
                                                         <td>
-                                                            <input type="time"
-                                                                   class="form-control form-control-sm"
-                                                                   name="Schedule[@i].EndTime"
-                                                                   value="17:00" />
+                                                            <input type="time" class="form-control form-control-sm"
+                                                                   name="Schedule[@i].EndTime" value="17:00" />
                                                         </td>
                                                     </tr>
                                                 }
@@ -207,7 +214,6 @@
                             </div>
                         </div>
 
-                        <!-- Submit -->
                         <div class="d-grid mt-3">
                             <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
                         </div>
@@ -235,14 +241,21 @@
             const doctorFields = document.getElementById('doctorFields');
 
             function update() {
-                if (roleDoctor && roleDoctor.checked) {
-                    patientFields.style.display = 'none';
-                    doctorFields.style.display = 'block';
-                } else {
-                    patientFields.style.display = 'block';
-                    doctorFields.style.display = 'none';
-                }
+                const isDoctor = roleDoctor && roleDoctor.checked;
+
+                // Show/hide sections
+                patientFields.style.display = isDoctor ? 'none' : 'block';
+                doctorFields.style.display = isDoctor ? 'block' : 'none';
+
+                // Disable hidden section's inputs so they don't get submitted
+                patientFields.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = isDoctor;
+                });
+                doctorFields.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = !isDoctor;
+                });
             }
+
             rolePatient.addEventListener('change', update);
             roleDoctor.addEventListener('change', update);
             update();

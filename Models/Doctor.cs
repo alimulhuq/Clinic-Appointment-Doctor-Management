@@ -28,6 +28,9 @@ namespace Clinic_Application_Doctor_Management.Models
         [StringLength(20)]
         public string? Gender { get; set; }
 
+        [Range(0, 1000000)]
+        public decimal ConsultationFee { get; set; } = 500m;
+
         [StringLength(500)]
         public string? About { get; set; }
 

@@ -8,26 +8,19 @@
 }
 
 <div class="container py-4">
-
     <div class="mb-4">
         <h2 class="fw-bold">Find a Doctor</h2>
         <p class="text-muted">Search and choose a doctor for your appointment.</p>
     </div>
 
-    <!-- Search -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="get" asp-action="Doctors" asp-controller="Patient">
                 <div class="row g-3">
-
                     <div class="col-md-6">
-                        <input type="text"
-                               name="search"
-                               value="@currentSearch"
-                               class="form-control"
-                               placeholder="Search doctor name..." />
+                        <input type="text" name="search" value="@currentSearch"
+                               class="form-control" placeholder="Search doctor name..." />
                     </div>
-
                     <div class="col-md-4">
                         <select class="form-select" name="specialization">
                             <option value="">All Specializations</option>
@@ -44,17 +37,14 @@
                             }
                         </select>
                     </div>
-
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">Search</button>
                     </div>
-
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Doctors -->
     @if (Model.Any())
     {
         <div class="row g-4">
@@ -63,29 +53,22 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body p-4">
-
                             <div class="text-center mb-3">
                                 <div class="display-5">👨‍⚕️</div>
                                 <h5 class="fw-bold mt-2">@doctor.FullName</h5>
                                 <span class="badge bg-primary">@doctor.Specialization</span>
                             </div>
-
                             <div class="text-muted small mb-3">
                                 <p class="mb-2">🎓 @doctor.Qualification</p>
                                 <p class="mb-2">💼 @doctor.Experience years experience</p>
+                                <p class="mb-2">💰 Fee: @doctor.ConsultationFee.ToString("0.00")৳</p>
                                 <p class="mb-2">📅 @(string.IsNullOrWhiteSpace(doctor.AvailableDays) ? "Not specified" : doctor.AvailableDays)</p>
                                 <p class="mb-2">🕐 @doctor.AvailableTime</p>
                             </div>
-
                             <div class="d-grid">
-                                <a asp-controller="Patient"
-                                   asp-action="DoctorDetails"
-                                   asp-route-id="@doctor.DoctorId"
-                                   class="btn btn-outline-primary">
-                                    View Details
-                                </a>
+                                <a asp-controller="Patient" asp-action="DoctorDetails" asp-route-id="@doctor.DoctorId"
+                                   class="btn btn-outline-primary">View Details</a>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -94,9 +77,6 @@
     }
     else
     {
-        <div class="alert alert-info text-center">
-            No doctors match your search criteria.
-        </div>
+        <div class="alert alert-info text-center">No doctors match your search criteria.</div>
     }
-
 </div>

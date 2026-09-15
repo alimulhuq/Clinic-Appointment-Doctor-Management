@@ -1,0 +1,71 @@
+@model ClinicManagementSystem.ViewModels.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Collect Payment";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Collect Payment</h4>
+                </div>
+                <div class="card-body p-4">
+
+                    <div class="alert alert-info small">
+                        Record the amount the patient is paying now.
+                        Full payment confirms the appointment immediately.
+                    </div>
+
+                    <dl class="row mb-4">
+                        <dt class="col-sm-4">Patient</dt>
+                        <dd class="col-sm-8">@Model.PatientName</dd>
+
+                        <dt class="col-sm-4">Doctor</dt>
+                        <dd class="col-sm-8">@Model.DoctorName</dd>
+
+                        <dt class="col-sm-4">Date &amp; Time</dt>
+                        <dd class="col-sm-8">@Model.AppointmentDate.ToString("dd MMM yyyy") — @Model.AppointmentTime</dd>
+
+                        <dt class="col-sm-4">Total Fee</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.TotalFee.ToString("0.00")৳</dd>
+                    </dl>
+
+                    <form asp-action="Checkout" method="post">
+                        <input type="hidden" asp-for="AppointmentId" />
+                        <input type="hidden" asp-for="BillId" />
+                        <input type="hidden" asp-for="IsReceptionistFlow" />
+
+                        <div class="mb-3">
+                            <label asp-for="AmountNow" class="form-label fw-semibold"></label>
+                            <input asp-for="AmountNow" type="number" step="0.01" min="0" class="form-control" />
+                            <span asp-validation-for="AmountNow" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PaymentMethod" class="form-label fw-semibold"></label>
+                            <select asp-for="PaymentMethod" class="form-select">
+                                <option value="Cash">Cash</option>
+                                <option value="Card">Card</option>
+                                <option value="bKash">bKash</option>
+                                <option value="Nagad">Nagad</option>
+                            </select>
+                            <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a asp-action="Appointments" class="btn btn-outline-secondary">Skip</a>
+                            <button type="submit" class="btn btn-primary flex-grow-1">Save Payment</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

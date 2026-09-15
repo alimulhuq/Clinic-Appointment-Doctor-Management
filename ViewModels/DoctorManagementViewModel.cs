@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagementSystem.ViewModels{
-    public class DoctorManagementViewModel{
+namespace ClinicManagementSystem.ViewModels
+{
+    public class DoctorManagementViewModel
+    {
         public int Id { get; set; }
 
         [Required, StringLength(100)]
@@ -23,5 +25,15 @@ namespace ClinicManagementSystem.ViewModels{
         [Required, Range(0, 60)]
         [Display(Name = "Experience (years)")]
         public int Experience { get; set; }
+
+        [StringLength(20)]
+        public string? Gender { get; set; }
+
+        [Required, Range(0, 1000000)]
+        [Display(Name = "Consultation Fee (৳)")]
+        public decimal ConsultationFee { get; set; } = 500m;
+
+        [StringLength(500)]
+        public string? About { get; set; }
     }
 }

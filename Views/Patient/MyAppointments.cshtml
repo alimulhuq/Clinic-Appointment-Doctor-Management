@@ -2,29 +2,97 @@
 
 @{
     ViewData["Title"] = "My Appointments";
+    var bills = ViewBag.Bills as Dictionary<int, Clinic_Application_Doctor_Management.Models.Bill>
+                ?? new Dictionary<int, Clinic_Application_Doctor_Management.Models.Bill>();
 }
 
-<h2>My Appointments</h2>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Doctor</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Reason</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var a in Model)
-        {
-            <tr>
-                <td>@a.Doctor?.Name</td>
-                <td>@a.AppointmentDate.ToShortDateString()</td>
-                <td>@a.AppointmentTime.ToString(@"hh\:mm")</td>
-                <td>@a.Reason</td>
-                <td>@a.Status</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">My Appointments</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning">@TempData["WarningMessage"]</div>
+    }
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Reason</th>
+                        <th>Appointment</th>
+                        <th>Payment</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model)
+                    {
+                        bills.TryGetValue(a.Id, out var bill);
+                        <tr>
+                            <td>@a.Doctor?.Name</td>
+                            <td>@a.AppointmentDate.ToString("dd MMM yyyy")</td>
+                            <td>@a.AppointmentTime.ToString(@"hh\:mm")</td>
+                            <td>@a.Reason</td>
+                            <td>
+                                @if (a.Status == "Confirmed")
+                                {
+                                    <span class="badge bg-success">Confirmed</span>
+                                }
+                                else if (a.Status == "Cancelled")
+                                {
+                                    <span class="badge bg-danger">Cancelled</span>
+                                }
+                                else if (a.Status == "Completed")
+                                {
+                                    <span class="badge bg-primary">Completed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                }
+                            </td>
+                            <td>
+                                @if (bill == null)
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                                else if (bill.Status == "Paid")
+                                {
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                                else if (bill.Status == "Partial")
+                                {
+                                    <span class="badge bg-warning text-dark">Partial</span>
+                                    <i class="bi bi-exclamation-triangle text-warning" title="Not fully paid"></i>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Unpaid</span>
+                                }
+                            </td>
+                            <td>
+                                @if (bill != null && bill.Status != "Paid")
+                                {
+                                    <a asp-action="Checkout" asp-route-appointmentId="@a.Id"
+                                       class="btn btn-sm btn-primary">Pay Now</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

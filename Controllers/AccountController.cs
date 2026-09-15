@@ -22,7 +22,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             _audit = audit;
         }
 
-        // ---------- STANDARD LOGIN (for patients, doctors, receptionists) ----------
+        // ---------- STANDARD LOGIN (Patients, Doctors, Receptionists) ----------
         [HttpGet]
         public IActionResult Login() => View(new LoginViewModel());
 
@@ -40,14 +40,12 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 return View(model);
             }
 
-            // Only allow Patient, Doctor, or Receptionist through this form
             if (user.Role != "Patient" && user.Role != "Doctor" && user.Role != "Receptionist")
             {
                 ModelState.AddModelError("", "Please use the correct login page for your account type.");
                 return View(model);
             }
 
-            // Selected role must match the account's actual role
             if (model.SelectedRole != user.Role)
             {
                 ModelState.AddModelError("", $"This account is not registered as a {model.SelectedRole}. Please select the correct role.");
@@ -83,7 +81,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AdminLogin(LoginViewModel model)
         {
-            // Admin form doesn't post SelectedRole; remove its validation error
             ModelState.Remove(nameof(model.SelectedRole));
 
             if (!ModelState.IsValid) return View(model);
@@ -112,7 +109,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Dashboard", "Admin");
         }
 
-        // ---------- REGISTER (patient OR doctor) ----------
+        // ---------- REGISTER (Patient OR Doctor) ----------
         [HttpGet]
         public IActionResult Register() => View(new RegisterViewModel());
 
@@ -134,8 +131,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
             }
             else if (model.SelectedRole == "Doctor")
             {
-                if (string.IsNullOrWhiteSpace(model.Gender))
-                    ModelState.AddModelError("Gender", "Please select a gender.");
+                if (string.IsNullOrWhiteSpace(model.DoctorGender))
+                    ModelState.AddModelError("DoctorGender", "Please select a gender.");
 
                 if (string.IsNullOrWhiteSpace(model.Specialization))
                     ModelState.AddModelError("Specialization", "Specialization is required.");
@@ -145,6 +142,9 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
                 if (!model.Experience.HasValue)
                     ModelState.AddModelError("Experience", "Experience is required.");
+
+                if (!model.ConsultationFee.HasValue || model.ConsultationFee <= 0)
+                    ModelState.AddModelError("ConsultationFee", "Please enter a valid consultation fee.");
             }
             else
             {
@@ -192,8 +192,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 await _context.SaveChangesAsync();
 
                 await _audit.LogAsync("Register", "Patient", patient.Id, "New patient registered");
-                TempData["SuccessMessage"] = "Registration successful! Please login.";
-                return RedirectToAction("Login");
             }
             else // Doctor
             {
@@ -202,10 +200,11 @@ namespace Clinic_Application_Doctor_Management.Controllers
                     Name = model.FullName,
                     Email = model.Email,
                     Phone = model.Phone,
-                    Gender = model.Gender,
+                    Gender = model.DoctorGender,
                     Specialization = model.Specialization!,
                     Qualification = model.Qualification!,
                     Experience = model.Experience ?? 0,
+                    ConsultationFee = model.ConsultationFee ?? 500m,
                     About = model.About
                 };
                 _context.Doctors.Add(doctor);
@@ -215,7 +214,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                // ---------- SAVE SCHEDULE (if provided) ----------
+                // Save schedule if provided
                 if (model.Schedule != null && model.Schedule.Any())
                 {
                     foreach (var s in model.Schedule.Where(x => x.IsEnabled))
@@ -238,9 +237,10 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 }
 
                 await _audit.LogAsync("Register", "Doctor", doctor.Id, "New doctor registered");
-                TempData["SuccessMessage"] = "Registration successful! Please login.";
-                return RedirectToAction("Login");
             }
+
+            TempData["SuccessMessage"] = "Registration successful! Please login.";
+            return RedirectToAction("Login");
         }
 
         // ---------- LOGOUT ----------

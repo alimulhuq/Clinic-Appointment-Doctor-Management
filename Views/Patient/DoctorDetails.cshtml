@@ -36,6 +36,10 @@
                             <p class="fw-semibold">@Model.Phone</p>
                         </div>
                         <div class="col-md-6">
+                            <h6 class="text-muted">Consultation Fee</h6>
+                            <p class="fw-semibold">@Model.ConsultationFee.ToString("0.00")৳</p>
+                        </div>
+                        <div class="col-md-6">
                             <h6 class="text-muted">Available Days</h6>
                             <p class="fw-semibold">
                                 @if (availableDays.Any())

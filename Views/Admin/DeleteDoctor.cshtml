@@ -1,0 +1,48 @@
+@model ClinicManagementSystem.ViewModels.DoctorManagementViewModel
+
+@{
+    ViewData["Title"] = "Delete Doctor";
+}
+
+<div class="container py-4">
+    <a asp-action="Doctors" class="btn btn-outline-secondary btn-sm mb-3">← Back to Doctors</a>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">Delete Doctor</h4>
+        </div>
+        <div class="card-body p-4">
+
+            <div class="alert alert-warning">
+                Are you sure you want to permanently delete this doctor?
+                This action cannot be undone. Doctors with existing appointments cannot be deleted.
+            </div>
+
+            <dl class="row mb-4">
+                <dt class="col-sm-3">Full Name</dt>
+                <dd class="col-sm-9">@Model.FullName</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Phone</dt>
+                <dd class="col-sm-9">@Model.Phone</dd>
+
+                <dt class="col-sm-3">Specialization</dt>
+                <dd class="col-sm-9">@Model.Specialization</dd>
+
+                <dt class="col-sm-3">Consultation Fee</dt>
+                <dd class="col-sm-9">@Model.ConsultationFee.ToString("0.00")৳</dd>
+            </dl>
+
+            <form asp-action="DeleteDoctor" method="post">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Yes, Delete
+                </button>
+                <a asp-action="Doctors" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+
+        </div>
+    </div>
+</div>
