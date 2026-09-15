@@ -24,7 +24,7 @@
 @if (isAdmin)
 {
     <!-- ========== ALL ADMIN PAGES: SIDEBAR LAYOUT ========== -->
-    <div class="d-flex flex-grow-1 admin-layout">
+    <div class="admin-layout">
         <nav id="adminSidebar" class="admin-sidebar d-flex flex-column">
             <div class="sidebar-brand">
                 <span class="brand-icon"></span>
@@ -86,29 +86,18 @@
             </ul>
         </nav>
 
-        <div class="admin-content flex-grow-1 d-flex flex-column">
-            <main class="flex-grow-1">
+        <div class="admin-content">
+            <main>
                 @RenderBody()
             </main>
 
             <footer class="admin-footer mt-auto">
-                <div class="container-fluid px-4 py-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h5 class="mb-1">ClinicCare</h5>
-                            <p class="mb-0 text-white-50 small">
-                                Simple and reliable clinic management for patients, doctors and staff.
-                            </p>
-                        </div>
-                        <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                            <p class="mb-1 small text-white-50">Quick Links</p>
-                            <a asp-controller="Home" asp-action="Doctors" class="text-white me-3 text-decoration-underline">Doctors</a>
-                            <a href="#" class="text-white text-decoration-underline">About</a>
-                        </div>
-                    </div>
-                    <hr class="border-secondary my-3" />
-                    <div class="text-center">
-                        <small class="text-white-50">&copy; 2026 ClinicCare. All Rights Reserved.</small>
+                <div class="admin-footer-inner">
+                    <span class="admin-footer-brand">ClinicCare</span>
+                    <span class="admin-footer-copy">&copy; 2026 ClinicCare. All Rights Reserved.</span>
+                    <div class="admin-footer-links">
+                        <a asp-controller="Home" asp-action="Doctors">Doctors</a>
+                        <a href="#">About</a>
                     </div>
                 </div>
             </footer>

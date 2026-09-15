@@ -4,9 +4,9 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="portal-page" style="width: 100%>
+<div class="portal-page">
     <!-- Top header bar -->
-    <div class="portal-topbar d-flex justify-content-between align-items-start flex-wrap gap-3 mb-2"">
+    <div class="portal-topbar d-flex justify-content-between align-items-start flex-wrap gap-3 mb-2">
         <div>
             <div class="portal-breadcrumb">CLINICAL PORTAL</div>
             <div class="portal-subbreadcrumb">SYSTEM ADMIN / CLINICCARE</div>
@@ -111,7 +111,9 @@
                     </div>
                 </div>
                 <div class="portal-card-body">
-                    <canvas id="weeklyChart" height="220"></canvas>
+                    <div class="chart-box">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>

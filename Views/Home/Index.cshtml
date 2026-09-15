@@ -5,72 +5,109 @@
 }
 
 <!-- HERO -->
-<section class="bg-primary text-white py-5">
-    <div class="container py-4">
+<section class="home-hero">
+    <div class="container">
         <div class="row align-items-center g-4">
-            <div class="col-lg-6">
-                <h1 class="fw-bold display-5">Your Health, Our Priority</h1>
-                <p class="lead">Find the right doctor, check availability, and book your appointment easily.</p>
-                <a asp-controller="Patient" asp-action="Doctors" class="btn btn-light text-primary btn-lg px-4 me-2">Find a Doctor</a>
-                <a asp-controller="Patient" asp-action="Doctors" class="btn btn-outline-light btn-lg px-4">Book Appointment</a>
+            <div class="col-lg-7">
+                <span class="home-badge">ClinicCare · Trusted Care</span>
+                <h1 class="home-hero-title">Your Health,<br />Our Priority</h1>
+                <p class="home-hero-text">
+                    Find the right specialist, check real-time availability, and book appointments
+                    in minutes — all in one place.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-controller="Patient" asp-action="Doctors" class="btn home-btn-primary">
+                        <i class="bi bi-search me-2"></i>Find a Doctor
+                    </a>
+                    <a asp-controller="Patient" asp-action="Doctors" class="btn home-btn-outline">
+                        <i class="bi bi-calendar2-check me-2"></i>Book Appointment
+                    </a>
+                </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <span style="font-size: 10rem;">🏥</span>
+            <div class="col-lg-5">
+                <div class="home-hero-panel">
+                    <div class="home-hero-icon">
+                        <i class="bi bi-hospital"></i>
+                    </div>
+                    <div class="row g-3 text-center">
+                        <div class="col-4">
+                            <div class="home-stat-value">@Model.AllDoctors.Count</div>
+                            <div class="home-stat-label">Doctors</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="home-stat-value">@Model.Departments.Count</div>
+                            <div class="home-stat-label">Departments</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="home-stat-value">24/7</div>
+                            <div class="home-stat-label">Support</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- QUICK APPOINTMENT SEARCH -->
-<section class="container">
-    <div class="card shadow-sm border-0" style="margin-top: -40px;">
-        <div class="card-body p-4">
-            <form class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Department</label>
-                    <select class="form-select" name="department">
-                        <option value="">All Departments</option>
-                        @foreach (var dept in Model.Departments)
-                        {
-                            <option value="@dept">@dept</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Doctor</label>
-                    <select class="form-select" name="doctor">
-                        <option value="">Any Doctor</option>
-                        @foreach (var doc in Model.AllDoctors)
-                        {
-                            <option value="@doc.Id">Dr. @doc.Name</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Date</label>
-                    <input type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                </div>
-                <div class="col-md-3">
-                    <button type="button" class="btn btn-primary w-100">Check Availability</button>
-                </div>
-            </form>
+<!-- QUICK SEARCH -->
+<section class="container home-search-wrap">
+    <div class="home-search-card">
+        <div class="home-search-header">
+            <h5 class="mb-0 fw-semibold">Quick Appointment Search</h5>
+            <span class="text-muted small">Filter by department, doctor, or date</span>
         </div>
+        <form class="row g-3 align-items-end" method="get" asp-controller="Patient" asp-action="Doctors">
+            <div class="col-md-3">
+                <label class="form-label home-label">Department</label>
+                <select class="form-select home-input" name="department">
+                    <option value="">All Departments</option>
+                    @foreach (var dept in Model.Departments)
+                    {
+                        <option value="@dept">@dept</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label home-label">Doctor</label>
+                <select class="form-select home-input" name="doctor">
+                    <option value="">Any Doctor</option>
+                    @foreach (var doc in Model.AllDoctors)
+                    {
+                        <option value="@doc.Id">Dr. @doc.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label home-label">Preferred Date</label>
+                <input type="text" class="form-control home-input home-date-input" name="date" id="preferredDate"
+                       placeholder="Select a date" autocomplete="off"
+                       data-min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn home-btn-primary w-100">
+                    <i class="bi bi-calendar2-week me-1"></i> Check Availability
+                </button>
+            </div>
+        </form>
     </div>
 </section>
 
 <!-- DEPARTMENTS -->
 <section class="container py-5">
-    <h2 class="fw-bold text-center mb-4">Medical Departments</h2>
-    <div class="row g-4">
+    <div class="text-center mb-4">
+        <h2 class="home-section-title">Medical Departments</h2>
+        <p class="text-muted mb-0">Specialized care across key clinical areas</p>
+    </div>
+    <div class="row g-3">
         @foreach (var dept in Model.Departments)
         {
             var doctorCount = Model.AllDoctors.Count(d => d.Specialization == dept);
-            <div class="col-md-3 col-sm-6">
-                <div class="card h-100 text-center border-0 shadow-sm p-3">
-                    <div style="font-size: 2rem;">🩺</div>
-                    <h6 class="fw-bold mt-2">@dept</h6>
-                    <p class="text-muted small">@doctorCount Doctor(s)</p>
-                    <span class="badge bg-light text-dark">@doctorCount Doctors</span>
+            <div class="col-6 col-md-3">
+                <div class="home-dept-card">
+                    <div class="home-dept-icon"><i class="bi bi-heart-pulse"></i></div>
+                    <h6 class="fw-semibold mb-1">@dept</h6>
+                    <p class="text-muted small mb-2">@doctorCount specialist(s)</p>
+                    <span class="home-chip">@doctorCount Doctors</span>
                 </div>
             </div>
         }
@@ -78,39 +115,53 @@
 </section>
 
 <!-- FEATURED DOCTORS -->
-<section class="bg-light py-5">
+<section class="home-section-muted py-5">
     <div class="container">
-        <h2 class="fw-bold text-center mb-4">Featured Doctors</h2>
-        <div class="row g-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+            <div>
+                <h2 class="home-section-title mb-1">Featured Doctors</h2>
+                <p class="text-muted mb-0">Experienced clinicians ready to help</p>
+            </div>
+            <a asp-controller="Home" asp-action="Doctors" class="auth-link">View all doctors →</a>
+        </div>
+        <div class="row g-3">
             @if (Model.FeaturedDoctors.Any())
             {
                 @foreach (var doctor in Model.FeaturedDoctors)
                 {
                     <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="fw-bold mb-0">Dr. @doctor.Name</h5>
-                                <p class="text-muted mb-1">@doctor.Specialization</p>
-                                <p class="small mb-1">@doctor.Qualification &middot; @doctor.Experience years experience</p>
-                                @if (doctor.Schedules.Any(s => s.IsActive))
-                                {
-                                    <span class="badge bg-success mb-2">Available</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary mb-2">No Schedule</span>
-                                }
-                                <div class="d-flex gap-2 mt-2">
-                                    <a asp-controller="Patient" asp-action="DoctorDetails" asp-route-id="@doctor.Id" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+                        <div class="home-doctor-card">
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <div class="home-doctor-avatar">
+                                    <i class="bi bi-person-badge"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-semibold mb-0">Dr. @doctor.Name</h5>
+                                    <p class="text-muted small mb-0">@doctor.Specialization</p>
                                 </div>
                             </div>
+                            <p class="small text-muted mb-2">
+                                @doctor.Qualification · @doctor.Experience yrs experience
+                            </p>
+                            @if (doctor.Schedules.Any(s => s.IsActive))
+                            {
+                                <span class="home-status-available">Available</span>
+                            }
+                            else
+                            {
+                                <span class="home-status-muted">No Schedule</span>
+                            }
+                            <a asp-controller="Patient" asp-action="DoctorDetails" asp-route-id="@doctor.Id"
+                               class="btn home-btn-outline-sm w-100 mt-3">View Profile</a>
                         </div>
                     </div>
                 }
             }
             else
             {
-                <p class="text-muted text-center">No doctors available yet.</p>
+                <div class="col-12">
+                    <p class="text-muted text-center mb-0">No doctors available yet.</p>
+                </div>
             }
         </div>
     </div>
@@ -118,36 +169,70 @@
 
 <!-- HOW IT WORKS -->
 <section class="container py-5">
-    <h2 class="fw-bold text-center mb-5">How It Works</h2>
-    <div class="row text-center g-4">
-        <div class="col-md-3">
-            <div style="font-size: 2rem;">🔍</div>
-            <h6 class="fw-bold mt-2">1. Find a Doctor</h6>
-            <p class="text-muted small">Browse by specialization</p>
+    <div class="text-center mb-4">
+        <h2 class="home-section-title">How It Works</h2>
+        <p class="text-muted mb-0">Four simple steps to quality care</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-3 col-6">
+            <div class="home-step-card">
+                <div class="home-step-num">1</div>
+                <div class="home-step-icon"><i class="bi bi-search"></i></div>
+                <h6 class="fw-semibold">Find a Doctor</h6>
+                <p class="text-muted small mb-0">Browse by specialization</p>
+            </div>
         </div>
-        <div class="col-md-3">
-            <div style="font-size: 2rem;">📅</div>
-            <h6 class="fw-bold mt-2">2. Check Availability</h6>
-            <p class="text-muted small">See open time slots</p>
+        <div class="col-md-3 col-6">
+            <div class="home-step-card">
+                <div class="home-step-num">2</div>
+                <div class="home-step-icon"><i class="bi bi-calendar3"></i></div>
+                <h6 class="fw-semibold">Check Availability</h6>
+                <p class="text-muted small mb-0">See open time slots</p>
+            </div>
         </div>
-        <div class="col-md-3">
-            <div style="font-size: 2rem;">📝</div>
-            <h6 class="fw-bold mt-2">3. Book Appointment</h6>
-            <p class="text-muted small">Confirm in seconds</p>
+        <div class="col-md-3 col-6">
+            <div class="home-step-card">
+                <div class="home-step-num">3</div>
+                <div class="home-step-icon"><i class="bi bi-journal-check"></i></div>
+                <h6 class="fw-semibold">Book Appointment</h6>
+                <p class="text-muted small mb-0">Confirm in seconds</p>
+            </div>
         </div>
-        <div class="col-md-3">
-            <div style="font-size: 2rem;">🤝</div>
-            <h6 class="fw-bold mt-2">4. Meet Your Doctor</h6>
-            <p class="text-muted small">Get the care you need</p>
+        <div class="col-md-3 col-6">
+            <div class="home-step-card">
+                <div class="home-step-num">4</div>
+                <div class="home-step-icon"><i class="bi bi-emoji-smile"></i></div>
+                <h6 class="fw-semibold">Meet Your Doctor</h6>
+                <p class="text-muted small mb-0">Get the care you need</p>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- CTA -->
-<section class="bg-primary text-white text-center py-5">
-    <div class="container">
-        <h2 class="fw-bold">Need to See a Doctor?</h2>
-        <p class="lead">Book your appointment quickly and get the care you need.</p>
-        <a asp-controller="Patient" asp-action="Doctors" class="btn btn-light text-primary btn-lg px-4">Book an Appointment</a>
+<section class="home-cta">
+    <div class="container text-center">
+        <h2 class="home-cta-title">Need to See a Doctor?</h2>
+        <p class="home-cta-text">Book your appointment quickly and get the care you need.</p>
+        <a asp-controller="Patient" asp-action="Doctors" class="btn home-btn-light">
+            Book an Appointment
+        </a>
     </div>
 </section>
+
+@section Scripts {
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var el = document.getElementById("preferredDate");
+    if (!el || typeof flatpickr === "undefined") return;
+    flatpickr(el, {
+        dateFormat: "Y-m-d",
+        minDate: el.getAttribute("data-min") || "today",
+        disableMobile: true,
+        monthSelectorType: "static"
+    });
+});
+</script>
+}
