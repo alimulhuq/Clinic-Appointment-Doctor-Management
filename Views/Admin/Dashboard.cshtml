@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Admin Dashboard";
+    var selected = Model.SelectedRange ?? "week";
 }
 
 <div class="portal-page">
@@ -13,11 +14,28 @@
             <h1 class="portal-title mb-0">Clinic Operations &amp; Management</h1>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <div class="portal-period-tabs">
-                <button type="button" class="period-tab">Today</button>
-                <button type="button" class="period-tab active">Last 7 Days</button>
-                <button type="button" class="period-tab">This Month</button>
+
+            <div class="portal-period-tabs" role="tablist" aria-label="Dashboard time range">
+                <a asp-action="Dashboard" asp-route-range="today"
+                   class="period-tab @(selected == "today" ? "active" : "")"
+                   role="tab" aria-selected="@(selected == "today")">
+                    <i class="bi bi-sun"></i>
+                    <span>Today</span>
+                </a>
+                <a asp-action="Dashboard" asp-route-range="week"
+                   class="period-tab @(selected == "week" ? "active" : "")"
+                   role="tab" aria-selected="@(selected == "week")">
+                    <i class="bi bi-calendar-week"></i>
+                    <span>Last 7 Days</span>
+                </a>
+                <a asp-action="Dashboard" asp-route-range="month"
+                   class="period-tab @(selected == "month" ? "active" : "")"
+                   role="tab" aria-selected="@(selected == "month")">
+                    <i class="bi bi-calendar-month"></i>
+                    <span>This Month</span>
+                </a>
             </div>
+
             <a asp-action="AddReceptionist" class="btn btn-portal-outline">
                 <i class="bi bi-building me-1"></i> Add Receptionist
             </a>
@@ -101,8 +119,8 @@
             <div class="portal-card h-100">
                 <div class="portal-card-header">
                     <div>
-                        <h5 class="mb-0 fw-semibold">Weekly Patient Consultation Volume</h5>
-                        <p class="text-muted small mb-0">Last 7 days — completed vs cancelled from database</p>
+                        <h5 class="mb-0 fw-semibold">@Model.ChartTitle</h5>
+                        <p class="text-muted small mb-0">@Model.ChartSubtitle</p>
                     </div>
                     <div class="portal-legend">
                         <span><i class="legend-dot legend-completed"></i> Completed</span>
@@ -121,29 +139,26 @@
                 <div class="portal-card-header">
                     <div>
                         <h5 class="mb-0 fw-semibold">Appointment Status</h5>
-                        <p class="text-muted small mb-0">Distribution of all patient bookings</p>
+                        <p class="text-muted small mb-0">
+                            @if (selected == "today") { <text>Today's distribution</text> }
+                            else if (selected == "month") { <text>This month's distribution</text> }
+                            else { <text>Last 7 days distribution</text> }
+                        </p>
                     </div>
                 </div>
                 <div class="portal-card-body text-center">
                     <div class="donut-wrap mx-auto">
                         <canvas id="statusChart"></canvas>
                         <div class="donut-center">
-                            <div class="donut-number">@Model.TotalAppointments</div>
+                            <div class="donut-number">@Model.RangeTotal</div>
                             <div class="donut-label">Total</div>
                         </div>
                     </div>
                     <ul class="portal-status-list list-unstyled mt-3 mb-0 text-start">
-                        @{
-                            var confirmed = Model.AllAppointments.Count(a => a.Status == "Confirmed");
-                            var pending = Model.AllAppointments.Count(a => a.Status == "Pending");
-                            var completed = Model.AllAppointments.Count(a => a.Status == "Completed");
-                            var rejected = Model.AllAppointments.Count(a => a.Status == "Rejected");
-                            var other = Model.AllAppointments.Count - confirmed - pending - completed - rejected;
-                        }
-                        <li><span class="status-dot" style="background:#2563eb"></span> Confirmed <span class="ms-auto fw-medium">@confirmed</span></li>
-                        <li><span class="status-dot" style="background:#0ea5e9"></span> Pending <span class="ms-auto fw-medium">@pending</span></li>
-                        <li><span class="status-dot" style="background:#64748b"></span> Completed <span class="ms-auto fw-medium">@completed</span></li>
-                        <li><span class="status-dot" style="background:#94a3b8"></span> Rejected / Other <span class="ms-auto fw-medium">@(rejected + other)</span></li>
+                        <li><span class="status-dot" style="background:#2563eb"></span> Confirmed <span class="ms-auto fw-medium">@Model.RangeConfirmed</span></li>
+                        <li><span class="status-dot" style="background:#0ea5e9"></span> Pending <span class="ms-auto fw-medium">@Model.RangePending</span></li>
+                        <li><span class="status-dot" style="background:#64748b"></span> Completed <span class="ms-auto fw-medium">@Model.RangeCompleted</span></li>
+                        <li><span class="status-dot" style="background:#94a3b8"></span> Rejected / Other <span class="ms-auto fw-medium">@Model.RangeRejectedOther</span></li>
                     </ul>
                 </div>
             </div>
@@ -155,27 +170,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
     (function () {
-        // Weekly bar chart — data from database (last 7 days)
-        const weeklyCompleted = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyCompleted));
-        const weeklyCancelled = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyCancelled));
+        const chartLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartLabels));
+        const chartCompleted = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartCompleted));
+        const chartCancelled = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartCancelled));
 
         const weeklyCtx = document.getElementById('weeklyChart');
         if (weeklyCtx) {
             new Chart(weeklyCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: chartLabels,
                     datasets: [
                         {
                             label: 'Completed',
-                            data: weeklyCompleted,
+                            data: chartCompleted,
                             backgroundColor: '#1e40af',
                             borderRadius: 4,
                             barPercentage: 0.55
                         },
                         {
                             label: 'Cancelled/Rescheduled',
-                            data: weeklyCancelled,
+                            data: chartCancelled,
                             backgroundColor: '#93c5fd',
                             borderRadius: 4,
                             barPercentage: 0.55
@@ -192,7 +207,7 @@
                     scales: {
                         x: {
                             grid: { display: false },
-                            ticks: { color: '#64748b', font: { size: 12 } }
+                            ticks: { color: '#64748b', font: { size: 12 }, maxRotation: 0, autoSkip: true }
                         },
                         y: {
                             beginAtZero: true,
@@ -209,22 +224,21 @@
             });
         }
 
-        // Status donut — from database
+        // Status donut
         const statusCtx = document.getElementById('statusChart');
         if (statusCtx) {
-            const confirmed = @Model.AllAppointments.Count(a => a.Status == "Confirmed");
-            const pending = @Model.AllAppointments.Count(a => a.Status == "Pending");
-            const completed = @Model.AllAppointments.Count(a => a.Status == "Completed");
-            const rejected = @Model.AllAppointments.Count(a => a.Status == "Rejected");
-            const other = Math.max(0, @Model.AllAppointments.Count - confirmed - pending - completed - rejected);
-            const total = confirmed + pending + completed + rejected + other;
+            const confirmed = @Model.RangeConfirmed;
+            const pending = @Model.RangePending;
+            const completed = @Model.RangeCompleted;
+            const rejectedOther = @Model.RangeRejectedOther;
+            const total = confirmed + pending + completed + rejectedOther;
 
             new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Confirmed', 'Pending', 'Completed', 'Rejected/Other'],
                     datasets: [{
-                        data: total > 0 ? [confirmed, pending, completed, rejected + other] : [1, 0, 0, 0],
+                        data: total > 0 ? [confirmed, pending, completed, rejectedOther] : [1, 0, 0, 0],
                         backgroundColor: ['#2563eb', '#0ea5e9', '#64748b', '#94a3b8'],
                         borderWidth: 0,
                         cutout: '72%'
@@ -242,4 +256,58 @@
         }
     })();
     </script>
+
+    <style>
+        /* =========================================
+           Professional period tab selector
+           ========================================= */
+        .portal-period-tabs {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px;
+            background: #f1f3f9;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            gap: 2px;
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .period-tab {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 18px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #64748b;
+            text-decoration: none;
+            border-radius: 999px;
+            line-height: 1;
+            white-space: nowrap;
+            transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+            cursor: pointer;
+        }
+
+        .period-tab i {
+            font-size: 0.9rem;
+        }
+
+        .period-tab:hover:not(.active) {
+            color: #1e293b;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .period-tab:focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+        }
+
+        .period-tab.active {
+            color: #ffffff;
+            background: #4f46e5;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+            font-weight: 600;
+        }
+    </style>
 }

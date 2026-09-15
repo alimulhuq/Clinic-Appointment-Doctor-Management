@@ -10,10 +10,126 @@
 
     <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/material_blue.css" />
 
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="/ClinicManagementSystem.styles.css" asp-append-version="true" />
+
+    <style>
+        /* =========================================
+           Flatpickr contrast fixes
+           ========================================= */
+        .flatpickr-calendar {
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+            color: #111827 !important;
+        }
+
+        .flatpickr-calendar .flatpickr-months {
+            background: #4f46e5 !important;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .flatpickr-calendar .flatpickr-month,
+        .flatpickr-calendar .flatpickr-current-month,
+        .flatpickr-calendar .flatpickr-current-month .cur-month,
+        .flatpickr-calendar .flatpickr-current-month input.cur-year {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+            font-weight: 600 !important;
+        }
+
+        .flatpickr-calendar .flatpickr-prev-month,
+        .flatpickr-calendar .flatpickr-next-month {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-prev-month:hover svg,
+        .flatpickr-calendar .flatpickr-next-month:hover svg {
+            fill: #fbbf24 !important;
+        }
+
+        .flatpickr-calendar .flatpickr-weekdays {
+            background: #eef2ff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-weekday {
+            color: #3730a3 !important;
+            font-weight: 700 !important;
+            font-size: 0.8rem !important;
+        }
+
+        .flatpickr-calendar .flatpickr-days,
+        .flatpickr-calendar .dayContainer {
+            background: #ffffff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day {
+            color: #111827 !important;
+            font-weight: 500 !important;
+            border-radius: 6px !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.prevMonthDay,
+        .flatpickr-calendar .flatpickr-day.nextMonthDay {
+            color: #9ca3af !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day:hover,
+        .flatpickr-calendar .flatpickr-day:focus {
+            background: #e0e7ff !important;
+            border-color: #c7d2fe !important;
+            color: #1e1b4b !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.selected,
+        .flatpickr-calendar .flatpickr-day.startRange,
+        .flatpickr-calendar .flatpickr-day.endRange,
+        .flatpickr-calendar .flatpickr-day.selected.inRange,
+        .flatpickr-calendar .flatpickr-day.selected:focus,
+        .flatpickr-calendar .flatpickr-day.selected:hover {
+            background: #4f46e5 !important;
+            border-color: #4f46e5 !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.today {
+            border-color: #4f46e5 !important;
+            color: #4f46e5 !important;
+            font-weight: 700 !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.today:hover {
+            background: #4f46e5 !important;
+            color: #ffffff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.flatpickr-disabled,
+        .flatpickr-calendar .flatpickr-day.flatpickr-disabled:hover {
+            color: #d1d5db !important;
+            background: #f9fafb !important;
+            cursor: not-allowed !important;
+            text-decoration: line-through;
+        }
+
+        .flatpickr-calendar .flatpickr-months .flatpickr-month .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background: transparent !important;
+            color: #ffffff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-months .flatpickr-month .flatpickr-current-month .flatpickr-monthDropdown-months option {
+            background: #ffffff !important;
+            color: #111827 !important;
+        }
+
+        .flatpickr-input[readonly] {
+            background-color: #fff !important;
+            cursor: pointer !important;
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
 @{
@@ -133,7 +249,7 @@ else
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity?.IsAuthenticated != true)
                         {
-                            <!-- Guests only see these -->
+                            <!-- Guests only -->
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
@@ -149,7 +265,7 @@ else
                         }
                         else if (role == "Patient")
                         {
-                            <!-- Patients: full public nav -->
+                            <!-- Patient: full public nav -->
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
@@ -171,7 +287,7 @@ else
                         }
                         else
                         {
-                            <!-- Doctor / Receptionist / Admin: no Home/About links -->
+                            <!-- Doctor / Receptionist / Admin: no Home / About -->
                             string dashboardController = "";
                             switch (role)
                             {
@@ -230,12 +346,12 @@ else
     <!-- Flatpickr -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 
-    <!-- Global date picker init: any input with class "datepicker-dob" or "datepicker-booking" gets a Flatpickr -->
+    <!-- Global date picker init -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof flatpickr === 'undefined') return;
 
-            // Birth date picker — no future dates, sensible year range
+            // Birth date picker — no future dates
             document.querySelectorAll('input.datepicker-dob').forEach(function (el) {
                 flatpickr(el, {
                     dateFormat: "Y-m-d",
@@ -263,7 +379,6 @@ else
                     monthSelectorType: 'static',
                     disable: [
                         function (date) {
-                            // 0 = Sunday, 6 = Saturday
                             return date.getDay() === 0 || date.getDay() === 6;
                         }
                     ]

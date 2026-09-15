@@ -22,8 +22,74 @@ namespace Clinic_Application_Doctor_Management.Controllers
         }
 
         // ---------- DASHBOARD ----------
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(string range = "week")
         {
+            // Normalize range
+            if (range != "today" && range != "week" && range != "month")
+                range = "week";
+
+            var today = DateTime.Today;
+
+            // ---------- Compute window + bucket labels ----------
+            DateTime windowStart;
+            DateTime windowEnd;
+            string[] labels;
+            List<(DateTime start, DateTime end, string label)> buckets = new();
+            bool isHourly = false;
+
+            if (range == "today")
+            {
+                isHourly = true;
+                windowStart = today;
+                windowEnd = today;
+
+                labels = new string[10];
+                for (int h = 9; h <= 18; h++)
+                {
+                    var start = today.AddHours(h);
+                    var end = start.AddHours(1);
+                    labels[h - 9] = start.ToString("htt").ToLower();   // "9am", "10am", ...
+                    buckets.Add((start, end, labels[h - 9]));
+                }
+            }
+            else if (range == "week")
+            {
+                windowStart = today.AddDays(-6);
+                windowEnd = today;
+
+                labels = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+                for (int i = 0; i < 7; i++)
+                {
+                    var day = windowStart.AddDays(i);
+                    buckets.Add((day.Date, day.Date.AddDays(1), labels[((int)day.DayOfWeek + 6) % 7]));
+                }
+            }
+            else // month
+            {
+                var firstOfMonth = new DateTime(today.Year, today.Month, 1);
+                var lastOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
+
+                windowStart = firstOfMonth;
+                windowEnd = lastOfMonth;
+
+                int days = lastOfMonth.Day;
+                labels = new string[days];
+                for (int d = 1; d <= days; d++)
+                {
+                    var day = new DateTime(today.Year, today.Month, d);
+                    labels[d - 1] = d.ToString();
+                    buckets.Add((day.Date, day.Date.AddDays(1), labels[d - 1]));
+                }
+            }
+
+            // ---------- Load appointments in range ----------
+            var rangeAppointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Where(a => a.AppointmentDate.Date >= windowStart.Date && a.AppointmentDate.Date <= windowEnd.Date)
+                .ToListAsync();
+
+            // ---------- Load all appointments (KPI context, unchanged) ----------
             var allAppointments = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
@@ -31,24 +97,58 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
 
-            var today = DateTime.Today;
-            var weekStart = today.AddDays(-6);
-            var weekAppointments = allAppointments
-                .Where(a => a.AppointmentDate.Date >= weekStart && a.AppointmentDate.Date <= today)
-                .ToList();
+            // ---------- Bucket the range appointments ----------
+            var chartCompleted = new int[buckets.Count];
+            var chartCancelled = new int[buckets.Count];
 
-            var weeklyCompleted = new int[7];
-            var weeklyCancelled = new int[7];
-
-            foreach (var appt in weekAppointments)
+            foreach (var appt in rangeAppointments)
             {
-                int dayIndex = ((int)appt.AppointmentDate.DayOfWeek + 6) % 7;
+                if (isHourly && (appt.AppointmentTime.Hours < 9 || appt.AppointmentTime.Hours > 18))
+                    continue;
 
-                if (appt.Status == "Completed" || appt.Status == "Confirmed")
-                    weeklyCompleted[dayIndex]++;
-                else if (appt.Status == "Rejected" || appt.Status == "Cancelled" || appt.Status == "Rescheduled")
-                    weeklyCancelled[dayIndex]++;
+                DateTime apptDateTime = appt.AppointmentDate.Date.Add(appt.AppointmentTime);
+
+                int idx = -1;
+                for (int i = 0; i < buckets.Count; i++)
+                {
+                    if (apptDateTime >= buckets[i].start && apptDateTime < buckets[i].end)
+                    {
+                        idx = i;
+                        break;
+                    }
+                }
+                if (idx < 0) continue;
+
+                bool isCompleted =
+                    appt.Status == "Completed" || appt.Status == "Confirmed";
+                bool isCancelled =
+                    appt.Status == "Rejected" || appt.Status == "Cancelled" || appt.Status == "Rescheduled";
+
+                if (isCompleted) chartCompleted[idx]++;
+                else if (isCancelled) chartCancelled[idx]++;
             }
+
+            // ---------- Donut counts (respect the range) ----------
+            int rangeConfirmed = rangeAppointments.Count(a => a.Status == "Confirmed");
+            int rangePending = rangeAppointments.Count(a => a.Status == "Pending");
+            int rangeCompleted = rangeAppointments.Count(a => a.Status == "Completed");
+            int rangeTotal = rangeAppointments.Count;
+            int rangeRejectedOther = rangeTotal - rangeConfirmed - rangePending - rangeCompleted;
+
+            // ---------- Titles ----------
+            string chartTitle = range switch
+            {
+                "today" => "Today's Patient Consultation Volume",
+                "month" => "This Month's Patient Consultation Volume",
+                _ => "Weekly Patient Consultation Volume"
+            };
+
+            string chartSubtitle = range switch
+            {
+                "today" => "Hourly view (9 AM – 7 PM) — completed vs cancelled",
+                "month" => $"{windowStart:MMMM yyyy} — completed vs cancelled from database",
+                _ => "Last 7 days — completed vs cancelled from database"
+            };
 
             var model = new AdminDashboardViewModel
             {
@@ -58,9 +158,21 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 TotalAppointments = allAppointments.Count,
                 AllAppointments = allAppointments,
                 AllPatients = await _context.Patients.OrderByDescending(p => p.CreatedAt).ToListAsync(),
-                WeeklyCompleted = weeklyCompleted,
-                WeeklyCancelled = weeklyCancelled
+
+                SelectedRange = range,
+                ChartTitle = chartTitle,
+                ChartSubtitle = chartSubtitle,
+                ChartLabels = labels,
+                ChartCompleted = chartCompleted,
+                ChartCancelled = chartCancelled,
+
+                RangeConfirmed = rangeConfirmed,
+                RangePending = rangePending,
+                RangeCompleted = rangeCompleted,
+                RangeRejectedOther = rangeRejectedOther,
+                RangeTotal = rangeTotal
             };
+
             return View(model);
         }
 
@@ -322,7 +434,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 return RedirectToAction("Doctors");
             }
 
-            // Block delete if the doctor has any appointments
             var hasAppointments = await _context.Appointments.AnyAsync(a => a.DoctorId == id);
             if (hasAppointments)
             {
@@ -330,7 +441,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 return RedirectToAction("Doctors");
             }
 
-            // Remove any schedules first (FK cascade may or may not handle this)
             var schedules = await _context.Schedules.Where(s => s.DoctorId == id).ToListAsync();
             if (schedules.Any())
             {
