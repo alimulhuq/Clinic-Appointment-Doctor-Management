@@ -42,7 +42,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                     .CountAsync(a => a.PatientId == patient!.Id && a.Status == "Completed"),
 
                 PendingBills = await _context.Bills
-                    .CountAsync(b => b.PatientId == patient!.Id && b.Status != "Paid"),
+                    .CountAsync(b => b.PatientId == patient!.Id && b.Status != "Paid" && b.Status != "Cancelled"),
 
                 AvailableDoctors = await _context.Doctors.CountAsync(),
 
@@ -232,12 +232,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .FirstOrDefaultAsync(a => a.Id == appointmentId && a.PatientId == patient.Id);
             if (appointment == null) return NotFound();
 
+            if (appointment.Status == "Cancelled")
+            {
+                TempData["ErrorMessage"] = "This appointment has been cancelled.";
+                return RedirectToAction("MyAppointments");
+            }
+
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == appointmentId);
             if (bill == null) return NotFound();
 
-            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
+            if (bill.Status == "Paid" || bill.Status == "Cancelled" || bill.PaidAmount >= bill.Amount)
             {
-                TempData["SuccessMessage"] = "This appointment is already paid.";
+                TempData["SuccessMessage"] = "This appointment is already paid or cancelled.";
                 return RedirectToAction("MyAppointments");
             }
 
@@ -272,12 +278,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .FirstOrDefaultAsync(a => a.Id == model.AppointmentId && a.PatientId == patient.Id);
             if (appointment == null) return NotFound();
 
+            if (appointment.Status == "Cancelled")
+            {
+                TempData["ErrorMessage"] = "This appointment has been cancelled.";
+                return RedirectToAction("MyAppointments");
+            }
+
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == model.AppointmentId);
             if (bill == null) return NotFound();
 
-            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
+            if (bill.Status == "Paid" || bill.Status == "Cancelled" || bill.PaidAmount >= bill.Amount)
             {
-                TempData["SuccessMessage"] = "This appointment is already paid.";
+                TempData["SuccessMessage"] = "This appointment is already paid or cancelled.";
                 return RedirectToAction("MyAppointments");
             }
 
@@ -301,20 +313,23 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
             if (bill.PaidAmount >= bill.Amount)
             {
+                // Fully paid
                 bill.Status = "Paid";
                 appointment.Status = "Confirmed";
                 TempData["SuccessMessage"] = "Payment complete. Appointment confirmed.";
             }
             else if (bill.PaidAmount > 0)
             {
+                // Partial — appointment is confirmed, balance still owed
                 bill.Status = "Partial";
-                appointment.Status = "Pending";
+                appointment.Status = "Confirmed";
                 TempData["WarningMessage"] =
                     $"Partial payment received ({paidNow:0.00}৳ of {bill.Amount:0.00}৳). " +
-                    $"Remaining balance: {bill.Amount - bill.PaidAmount:0.00}৳. Appointment pending until full payment.";
+                    $"Appointment confirmed. Remaining balance: {bill.Amount - bill.PaidAmount:0.00}৳.";
             }
             else
             {
+                // No payment — appointment stays pending
                 bill.Status = "Unpaid";
                 appointment.Status = "Pending";
                 TempData["WarningMessage"] = "No payment received. Appointment remains pending.";
@@ -324,6 +339,53 @@ namespace Clinic_Application_Doctor_Management.Controllers
             await _audit.LogAsync("Payment", "Bill", bill.Id,
                 $"Paid {paidNow:0.00}; total paid {bill.PaidAmount:0.00}; status {bill.Status}");
 
+            return RedirectToAction("MyAppointments");
+        }
+
+        // ---------------- CANCEL APPOINTMENT (Patient) ----------------
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelAppointment(int id)
+        {
+            var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
+            if (patient == null) return RedirectToAction("Profile");
+
+            var appointment = await _context.Appointments
+                .Include(a => a.Doctor)
+                .FirstOrDefaultAsync(a => a.Id == id && a.PatientId == patient.Id);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("MyAppointments");
+            }
+
+            if (appointment.Status == "Cancelled")
+            {
+                TempData["ErrorMessage"] = "This appointment is already cancelled.";
+                return RedirectToAction("MyAppointments");
+            }
+
+            if (appointment.Status == "Completed")
+            {
+                TempData["ErrorMessage"] = "Completed appointments cannot be cancelled.";
+                return RedirectToAction("MyAppointments");
+            }
+
+            // Mark cancelled — no refund
+            appointment.Status = "Cancelled";
+
+            var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == appointment.Id);
+            if (bill != null)
+            {
+                bill.Status = "Cancelled";
+            }
+
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("Cancel", "Appointment", appointment.Id,
+                $"Cancelled by patient {patient.Email}; no refund issued");
+
+            TempData["SuccessMessage"] = "Appointment cancelled. Note: no refund is issued for cancellations.";
             return RedirectToAction("MyAppointments");
         }
 

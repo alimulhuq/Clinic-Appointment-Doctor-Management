@@ -24,13 +24,11 @@ namespace Clinic_Application_Doctor_Management.Controllers
         // ---------- DASHBOARD ----------
         public async Task<IActionResult> Dashboard(string range = "week")
         {
-            // Normalize range
             if (range != "today" && range != "week" && range != "month")
                 range = "week";
 
             var today = DateTime.Today;
 
-            // ---------- Compute window + bucket labels ----------
             DateTime windowStart;
             DateTime windowEnd;
             string[] labels;
@@ -48,7 +46,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 {
                     var start = today.AddHours(h);
                     var end = start.AddHours(1);
-                    labels[h - 9] = start.ToString("htt").ToLower();   // "9am", "10am", ...
+                    labels[h - 9] = start.ToString("htt").ToLower();
                     buckets.Add((start, end, labels[h - 9]));
                 }
             }
@@ -64,7 +62,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                     buckets.Add((day.Date, day.Date.AddDays(1), labels[((int)day.DayOfWeek + 6) % 7]));
                 }
             }
-            else // month
+            else
             {
                 var firstOfMonth = new DateTime(today.Year, today.Month, 1);
                 var lastOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
@@ -82,14 +80,12 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 }
             }
 
-            // ---------- Load appointments in range ----------
             var rangeAppointments = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
                 .Where(a => a.AppointmentDate.Date >= windowStart.Date && a.AppointmentDate.Date <= windowEnd.Date)
                 .ToListAsync();
 
-            // ---------- Load all appointments (KPI context, unchanged) ----------
             var allAppointments = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
@@ -97,7 +93,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
 
-            // ---------- Bucket the range appointments ----------
             var chartCompleted = new int[buckets.Count];
             var chartCancelled = new int[buckets.Count];
 
@@ -119,23 +114,20 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 }
                 if (idx < 0) continue;
 
-                bool isCompleted =
-                    appt.Status == "Completed" || appt.Status == "Confirmed";
-                bool isCancelled =
-                    appt.Status == "Rejected" || appt.Status == "Cancelled" || appt.Status == "Rescheduled";
+                bool isCompleted = appt.Status == "Completed" || appt.Status == "Confirmed";
+                bool isCancelled = appt.Status == "Rejected" || appt.Status == "Cancelled" || appt.Status == "Rescheduled";
 
                 if (isCompleted) chartCompleted[idx]++;
                 else if (isCancelled) chartCancelled[idx]++;
             }
 
-            // ---------- Donut counts (respect the range) ----------
             int rangeConfirmed = rangeAppointments.Count(a => a.Status == "Confirmed");
             int rangePending = rangeAppointments.Count(a => a.Status == "Pending");
             int rangeCompleted = rangeAppointments.Count(a => a.Status == "Completed");
+            int rangeCancelled = rangeAppointments.Count(a => a.Status == "Cancelled");
             int rangeTotal = rangeAppointments.Count;
             int rangeRejectedOther = rangeTotal - rangeConfirmed - rangePending - rangeCompleted;
 
-            // ---------- Titles ----------
             string chartTitle = range switch
             {
                 "today" => "Today's Patient Consultation Volume",
@@ -169,6 +161,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 RangeConfirmed = rangeConfirmed,
                 RangePending = rangePending,
                 RangeCompleted = rangeCompleted,
+                RangeCancelled = rangeCancelled,
                 RangeRejectedOther = rangeRejectedOther,
                 RangeTotal = rangeTotal
             };
@@ -232,10 +225,17 @@ namespace Clinic_Application_Doctor_Management.Controllers
         }
 
         // ---------- APPOINTMENTS ----------
-        public async Task<IActionResult> Appointments()
+        public async Task<IActionResult> Appointments(string status = null)
         {
-            var appointments = await _context.Appointments
-                .Include(a => a.Patient).Include(a => a.Doctor)
+            var query = _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(status))
+                query = query.Where(a => a.Status == status);
+
+            var appointments = await query
                 .OrderByDescending(a => a.AppointmentDate).ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
 
@@ -255,6 +255,8 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 DurationMinutes = a.DurationMinutes,
                 CreatedAt = a.CreatedAt
             }).ToList();
+
+            ViewBag.StatusFilter = status;
             return View(viewModels);
         }
 

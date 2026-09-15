@@ -111,6 +111,21 @@
                 </div>
             </div>
         </div>
+        <div class="col-6 col-lg-3">
+            <div class="portal-stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="portal-stat-label">Cancelled Appointments</span>
+                    <span class="portal-stat-icon"><i class="bi bi-x-octagon"></i></span>
+                </div>
+                <div class="portal-stat-value text-danger">@Model.RangeCancelled</div>
+                <div class="portal-stat-meta text-muted">
+                    Selected period
+                </div>
+                <div class="portal-stat-bar">
+                    <div class="portal-stat-bar-fill" style="width: 100%; background:#ef4444;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Charts row -->
@@ -224,7 +239,6 @@
             });
         }
 
-        // Status donut
         const statusCtx = document.getElementById('statusChart');
         if (statusCtx) {
             const confirmed = @Model.RangeConfirmed;
@@ -258,9 +272,6 @@
     </script>
 
     <style>
-        /* =========================================
-           Professional period tab selector
-           ========================================= */
         .portal-period-tabs {
             display: inline-flex;
             align-items: center;
@@ -271,7 +282,6 @@
             gap: 2px;
             box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
         }
-
         .period-tab {
             display: inline-flex;
             align-items: center;
@@ -288,21 +298,15 @@
             transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
             cursor: pointer;
         }
-
-        .period-tab i {
-            font-size: 0.9rem;
-        }
-
+        .period-tab i { font-size: 0.9rem; }
         .period-tab:hover:not(.active) {
             color: #1e293b;
             background: rgba(255, 255, 255, 0.7);
         }
-
         .period-tab:focus-visible {
             outline: 2px solid #4f46e5;
             outline-offset: 2px;
         }
-
         .period-tab.active {
             color: #ffffff;
             background: #4f46e5;

@@ -30,6 +30,12 @@
                         <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
                     }
 
+                    <div class="alert alert-warning small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Please note:</strong> cancelling this appointment after payment is
+                        <strong>not eligible for a refund</strong>.
+                    </div>
+
                     <form asp-action="BookAppointment" asp-controller="Patient" method="post" id="bookingForm">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
@@ -89,20 +95,18 @@
             const form = document.getElementById('bookingForm');
 
             function validateDateTime() {
-                const raw = dateInput.value;   // Flatpickr stores "Y-m-d"
+                const raw = dateInput.value;
                 if (!raw) { clearError(); return true; }
 
                 const selectedDate = new Date(raw + 'T00:00:00');
                 const now = new Date();
 
-                // Weekend check
                 const day = selectedDate.getDay();
                 if (day === 0 || day === 6) {
                     showError('Appointments are not available on weekends.');
                     return false;
                 }
 
-                // Past date
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 if (selectedDate < today) {
@@ -110,7 +114,6 @@
                     return false;
                 }
 
-                // Today + time in the past
                 if (selectedDate.getTime() === today.getTime() && timeSelect.value) {
                     const parts = timeSelect.value.split(':');
                     const h = parseInt(parts[0]);
@@ -147,9 +150,5 @@
     </script>
     <style>
         #appointmentDate.is-invalid { border-color: #dc3545; background-color: #f8d7da; }
-
-        /* Make Flatpickr match Bootstrap inputs */
-        .flatpickr-input[readonly] { background-color: #fff; cursor: pointer; }
-        .flatpickr-calendar { border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.08); }
     </style>
 }

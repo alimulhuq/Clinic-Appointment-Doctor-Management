@@ -127,12 +127,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
             if (appointment == null) return NotFound();
 
+            if (appointment.Status == "Cancelled")
+            {
+                TempData["ErrorMessage"] = "This appointment has been cancelled.";
+                return RedirectToAction("Appointments");
+            }
+
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == appointmentId);
             if (bill == null) return NotFound();
 
-            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
+            if (bill.Status == "Paid" || bill.Status == "Cancelled" || bill.PaidAmount >= bill.Amount)
             {
-                TempData["SuccessMessage"] = "This appointment is already paid.";
+                TempData["SuccessMessage"] = "This appointment is already paid or cancelled.";
                 return RedirectToAction("Appointments");
             }
 
@@ -163,12 +169,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .FirstOrDefaultAsync(a => a.Id == model.AppointmentId);
             if (appointment == null) return NotFound();
 
+            if (appointment.Status == "Cancelled")
+            {
+                TempData["ErrorMessage"] = "This appointment has been cancelled.";
+                return RedirectToAction("Appointments");
+            }
+
             var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == model.AppointmentId);
             if (bill == null) return NotFound();
 
-            if (bill.Status == "Paid" || bill.PaidAmount >= bill.Amount)
+            if (bill.Status == "Paid" || bill.Status == "Cancelled" || bill.PaidAmount >= bill.Amount)
             {
-                TempData["SuccessMessage"] = "This appointment is already paid.";
+                TempData["SuccessMessage"] = "This appointment is already paid or cancelled.";
                 return RedirectToAction("Appointments");
             }
 
@@ -193,20 +205,23 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
             if (bill.PaidAmount >= bill.Amount)
             {
+                // Fully paid
                 bill.Status = "Paid";
                 appointment.Status = "Confirmed";
                 TempData["SuccessMessage"] = "Payment complete. Appointment confirmed.";
             }
             else if (bill.PaidAmount > 0)
             {
+                // Partial — appointment is confirmed, balance still owed
                 bill.Status = "Partial";
-                appointment.Status = "Pending";
+                appointment.Status = "Confirmed";
                 TempData["WarningMessage"] =
                     $"Partial payment received ({paidNow:0.00}৳ of {bill.Amount:0.00}৳). " +
-                    $"Remaining balance: {bill.Amount - bill.PaidAmount:0.00}৳. Appointment pending until full payment.";
+                    $"Appointment confirmed. Remaining balance: {bill.Amount - bill.PaidAmount:0.00}৳.";
             }
             else
             {
+                // No payment — appointment stays pending
                 bill.Status = "Unpaid";
                 appointment.Status = "Pending";
                 TempData["WarningMessage"] = "No payment received. Appointment remains pending.";
@@ -297,8 +312,16 @@ namespace Clinic_Application_Doctor_Management.Controllers
             }
 
             appointment.Status = "Cancelled";
+
+            // Mark bill as Cancelled (no refund)
+            var bill = await _context.Bills.FirstOrDefaultAsync(b => b.AppointmentId == appointment.Id);
+            if (bill != null)
+            {
+                bill.Status = "Cancelled";
+            }
+
             await _context.SaveChangesAsync();
-            await _audit.LogAsync("Update", "Appointment", id, "Cancelled by receptionist");
+            await _audit.LogAsync("Cancel", "Appointment", id, "Cancelled by receptionist; no refund");
             TempData["SuccessMessage"] = $"Appointment for {appointment.Patient?.FullName} cancelled.";
             return RedirectToAction("Appointments");
         }

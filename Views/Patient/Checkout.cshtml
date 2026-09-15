@@ -50,6 +50,12 @@
                         <input type="hidden" asp-for="AppointmentId" />
                         <input type="hidden" asp-for="BillId" />
 
+                        <div class="alert alert-warning small mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Refund policy:</strong> cancelling this appointment after payment is
+                            <strong>not eligible for a refund</strong>.
+                        </div>
+
                         <div class="mb-3">
                             <label asp-for="AmountNow" class="form-label fw-semibold"></label>
                             <input asp-for="AmountNow" type="number" step="0.01" min="0" max="@Model.BalanceDue" class="form-control" />

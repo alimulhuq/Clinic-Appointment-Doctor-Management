@@ -17,6 +17,16 @@
     {
         <div class="alert alert-warning">@TempData["WarningMessage"]</div>
     }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="alert alert-info small">
+        <i class="bi bi-info-circle me-1"></i>
+        <strong>Refund policy:</strong> cancelling a booked appointment is <strong>not eligible for a refund</strong>,
+        including any partial or full payment already made.
+    </div>
 
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
@@ -74,13 +84,17 @@
                                     <span class="badge bg-warning text-dark">Partial</span>
                                     <i class="bi bi-exclamation-triangle text-warning" title="Not fully paid"></i>
                                 }
+                                else if (bill.Status == "Cancelled")
+                                {
+                                    <span class="badge bg-danger">Cancelled</span>
+                                }
                                 else
                                 {
                                     <span class="badge bg-danger">Unpaid</span>
                                 }
                             </td>
                             <td>
-                                @if (bill == null)
+                                @if (bill == null || a.Status == "Cancelled")
                                 {
                                     <span class="text-muted">—</span>
                                 }
@@ -94,14 +108,23 @@
                                 }
                             </td>
                             <td>
-                                @if (bill != null && bill.Status != "Paid")
+                                @if (a.Status == "Cancelled" || a.Status == "Completed")
                                 {
-                                    <a asp-action="Checkout" asp-route-appointmentId="@a.Id"
-                                       class="btn btn-sm btn-primary">Pay Now</a>
+                                    <span class="text-muted">—</span>
                                 }
                                 else
                                 {
-                                    <span class="text-muted">—</span>
+                                    @if (bill != null && bill.Status != "Paid" && bill.Status != "Cancelled")
+                                    {
+                                        <a asp-action="Checkout" asp-route-appointmentId="@a.Id"
+                                           class="btn btn-sm btn-primary me-1">Pay Now</a>
+                                    }
+                                    <form asp-action="CancelAppointment" asp-route-id="@a.Id" method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Cancel this appointment? No refund will be issued.');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                    </form>
                                 }
                             </td>
                         </tr>
