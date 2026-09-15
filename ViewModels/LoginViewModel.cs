@@ -11,5 +11,9 @@ namespace ClinicManagementSystem.ViewModels
         [Required(ErrorMessage = "Password is required.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Please select a role.")]
+        [Display(Name = "Login As")]
+        public string SelectedRole { get; set; } = "Patient";
     }
 }

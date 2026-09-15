@@ -1,0 +1,39 @@
+@model ClinicManagementSystem.ViewModels.ReceptionistManagementViewModel
+
+@{
+    ViewData["Title"] = "Receptionist Details";
+}
+
+<div class="container py-4">
+    <a asp-action="Receptionists" class="btn btn-outline-secondary btn-sm mb-3">← Back to Receptionists</a>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Receptionist Details</h4>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Full Name</h6>
+                    <p class="fw-bold">@Model.FullName</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Username</h6>
+                    <p class="fw-bold">@Model.Username</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Email</h6>
+                    <p>@Model.Email</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Phone</h6>
+                    <p>@Model.Phone</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Role</h6>
+                    <p><span class="badge bg-info text-dark">Receptionist</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

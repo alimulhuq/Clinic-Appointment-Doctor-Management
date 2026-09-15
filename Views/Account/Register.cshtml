@@ -1,276 +1,267 @@
 ﻿@model ClinicManagementSystem.ViewModels.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Patient Registration";
+    ViewData["Title"] = "Registration";
+    var days = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 }
 
 <div class="container py-5">
-
     <div class="row justify-content-center">
-
-        <div class="col-lg-7">
-
+        <div class="col-lg-8">
             <div class="card shadow border-0">
-
                 <div class="card-body p-4 p-md-5">
 
-                    <!-- Header -->
-
                     <div class="text-center mb-4">
-
                         <div class="fs-1">🏥</div>
-
-                        <h3 class="fw-bold">
-                            Create Patient Account
-                        </h3>
-
-                        <p class="text-muted">
-                            Register to book appointments with our doctors.
-                        </p>
-
+                        <h3 class="fw-bold">Create Account</h3>
+                        <p class="text-muted">Register as a Patient or a Doctor.</p>
                     </div>
 
+                    <form asp-action="Register" asp-controller="Account" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-                    <form asp-action="Register"
-                          asp-controller="Account"
-                          method="post">
+                        <!-- Role selector -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Register As</label>
+                            <div class="reg-role-selector">
+                                <label class="reg-role-option">
+                                    <input type="radio" asp-for="SelectedRole" value="Patient" id="rolePatient" />
+                                    <span class="reg-role-box">
+                                        <i class="bi bi-person"></i>
+                                        <span>Patient</span>
+                                    </span>
+                                </label>
+                                <label class="reg-role-option">
+                                    <input type="radio" asp-for="SelectedRole" value="Doctor" id="roleDoctor" />
+                                    <span class="reg-role-box">
+                                        <i class="bi bi-person-badge"></i>
+                                        <span>Doctor</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <span asp-validation-for="SelectedRole" class="text-danger small"></span>
+                        </div>
 
+                        <!-- Shared -->
                         <div class="row">
-
-                            <!-- Full Name -->
-
                             <div class="col-md-6 mb-3">
-
-                                <label asp-for="FullName"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="FullName"
-                                       class="form-control"
-                                       placeholder="Enter full name" />
-
-                                <span asp-validation-for="FullName"
-                                      class="text-danger">
-                                </span>
-
+                                <label asp-for="FullName" class="form-label"></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
                             </div>
-
-
-                            <!-- Email -->
-
                             <div class="col-md-6 mb-3">
-
-                                <label asp-for="Email"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="Email"
-                                       class="form-control"
-                                       placeholder="Enter email" />
-
-                                <span asp-validation-for="Email"
-                                      class="text-danger">
-                                </span>
-
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="Enter email" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
-
-
-                            <!-- Phone -->
-
                             <div class="col-md-6 mb-3">
-
-                                <label asp-for="Phone"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="Phone"
-                                       class="form-control"
-                                       placeholder="Enter phone number" />
-
-                                <span asp-validation-for="Phone"
-                                      class="text-danger">
-                                </span>
-
+                                <label asp-for="Phone" class="form-label"></label>
+                                <input asp-for="Phone" class="form-control" placeholder="Enter phone number" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
                             </div>
-
-
-                            <!-- Date of Birth -->
-
                             <div class="col-md-6 mb-3">
-
-                                <label asp-for="DateOfBirth"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="DateOfBirth"
-                                       class="form-control" />
-
-                                <span asp-validation-for="DateOfBirth"
-                                      class="text-danger">
-                                </span>
-
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control" placeholder="Minimum 6 characters" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
                             </div>
-
-
-                            <!-- Gender -->
-
                             <div class="col-md-6 mb-3">
-
-                                <label asp-for="Gender"
-                                       class="form-label">
-                                </label>
-
-                                <select asp-for="Gender"
-                                        class="form-select">
-
-                                    <option value="">
-                                        Select Gender
-                                    </option>
-
-                                    <option value="Male">
-                                        Male
-                                    </option>
-
-                                    <option value="Female">
-                                        Female
-                                    </option>
-
-                                    <option value="Other">
-                                        Other
-                                    </option>
-
-                                </select>
-
-                                <span asp-validation-for="Gender"
-                                      class="text-danger">
-                                </span>
-
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                             </div>
-
-
-                            <!-- Guardian -->
-
-                            <div class="col-md-6 mb-3">
-
-                                <label asp-for="GuardianName"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="GuardianName"
-                                       class="form-control"
-                                       placeholder="Optional" />
-
-                            </div>
-
-
-                            <!-- Address -->
-
-                            <div class="col-12 mb-3">
-
-                                <label asp-for="Address"
-                                       class="form-label">
-                                </label>
-
-                                <textarea asp-for="Address"
-                                          class="form-control"
-                                          rows="2"
-                                          placeholder="Enter address">
-                                </textarea>
-
-                                <span asp-validation-for="Address"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Password -->
-
-                            <div class="col-md-6 mb-3">
-
-                                <label asp-for="Password"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="Password"
-                                       class="form-control"
-                                       placeholder="Minimum 6 characters" />
-
-                                <span asp-validation-for="Password"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
-
-                            <!-- Confirm Password -->
-
-                            <div class="col-md-6 mb-3">
-
-                                <label asp-for="ConfirmPassword"
-                                       class="form-label">
-                                </label>
-
-                                <input asp-for="ConfirmPassword"
-                                       class="form-control"
-                                       placeholder="Re-enter password" />
-
-                                <span asp-validation-for="ConfirmPassword"
-                                      class="text-danger">
-                                </span>
-
-                            </div>
-
                         </div>
 
+                        <!-- Patient section -->
+                        <div id="patientFields" class="reg-section">
+                            <hr class="my-3" />
+                            <h6 class="text-muted mb-3">Patient Information</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="DateOfBirth" class="form-label"></label>
+                                    <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                    <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Gender" class="form-label"></label>
+                                    <select asp-for="Gender" class="form-select">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="GuardianName" class="form-label"></label>
+                                    <input asp-for="GuardianName" class="form-control" placeholder="Optional" />
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label asp-for="Address" class="form-label"></label>
+                                    <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                                    <span asp-validation-for="Address" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
 
-                        <!-- Register Button -->
+                        <!-- Doctor section -->
+                        <div id="doctorFields" class="reg-section" style="display:none;">
+                            <hr class="my-3" />
+                            <h6 class="text-muted mb-3">Doctor Information</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Gender" class="form-label"></label>
+                                    <select asp-for="Gender" class="form-select">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Specialization" class="form-label"></label>
+                                    <input asp-for="Specialization" class="form-control" placeholder="e.g. Cardiologist" />
+                                    <span asp-validation-for="Specialization" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Qualification" class="form-label"></label>
+                                    <input asp-for="Qualification" class="form-control" placeholder="e.g. MBBS, FCPS" />
+                                    <span asp-validation-for="Qualification" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Experience" class="form-label"></label>
+                                    <input asp-for="Experience" type="number" min="0" max="60" class="form-control" />
+                                    <span asp-validation-for="Experience" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label asp-for="About" class="form-label"></label>
+                                    <textarea asp-for="About" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="About" class="text-danger small"></span>
+                                </div>
+                            </div>
 
+                            <!-- Collapsible schedule editor -->
+                            <div class="mb-3">
+                                <button class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#scheduleSection"
+                                        aria-expanded="false"
+                                        aria-controls="scheduleSection">
+                                    <span>🗓️ Add Weekly Schedule (optional)</span>
+                                    <span>▼</span>
+                                </button>
+
+                                <div class="collapse mt-3" id="scheduleSection">
+                                    <div class="alert alert-info small mb-3">
+                                        Tick the days you're available and set your hours. Leave blank if you'll add this later.
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:80px;">Available</th>
+                                                    <th>Day</th>
+                                                    <th>Start</th>
+                                                    <th>End</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < days.Length; i++)
+                                                {
+                                                    var day = days[i];
+                                                    <tr>
+                                                        <td>
+                                                            <input type="checkbox"
+                                                                   class="form-check-input"
+                                                                   name="Schedule[@i].IsEnabled"
+                                                                   value="true"
+                                                                   id="sched_@i" />
+                                                            <input type="hidden"
+                                                                   name="Schedule[@i].IsEnabled"
+                                                                   value="false" />
+                                                        </td>
+                                                        <td>
+                                                            <label for="sched_@i" class="form-check-label fw-semibold">@day</label>
+                                                            <input type="hidden" name="Schedule[@i].Day" value="@day" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="time"
+                                                                   class="form-control form-control-sm"
+                                                                   name="Schedule[@i].StartTime"
+                                                                   value="09:00" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="time"
+                                                                   class="form-control form-control-sm"
+                                                                   name="Schedule[@i].EndTime"
+                                                                   value="17:00" />
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
                         <div class="d-grid mt-3">
-
-                            <button type="submit"
-                                    class="btn btn-primary btn-lg">
-
-                                Create Patient Account
-
-                            </button>
-
+                            <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
                         </div>
-
-
-                        <!-- Login Link -->
 
                         <div class="text-center mt-4">
-
-                            <span class="text-muted">
-                                Already have an account?
-                            </span>
-
-                            <a asp-controller="Account"
-                               asp-action="Login"
-                               class="text-decoration-none">
-
-                                Login
-
-                            </a>
-
+                            <span class="text-muted">Already have an account?</span>
+                            <a asp-controller="Account" asp-action="Login" class="text-decoration-none">Login</a>
                         </div>
-
                     </form>
 
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
 
-
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
 
+    <script>
+        (function () {
+            const rolePatient = document.getElementById('rolePatient');
+            const roleDoctor = document.getElementById('roleDoctor');
+            const patientFields = document.getElementById('patientFields');
+            const doctorFields = document.getElementById('doctorFields');
+
+            function update() {
+                if (roleDoctor && roleDoctor.checked) {
+                    patientFields.style.display = 'none';
+                    doctorFields.style.display = 'block';
+                } else {
+                    patientFields.style.display = 'block';
+                    doctorFields.style.display = 'none';
+                }
+            }
+            rolePatient.addEventListener('change', update);
+            roleDoctor.addEventListener('change', update);
+            update();
+        })();
+    </script>
+
+    <style>
+        .reg-role-selector { display: flex; gap: 0.75rem; }
+        .reg-role-option { flex: 1; cursor: pointer; margin: 0; }
+        .reg-role-option input[type="radio"] { display: none; }
+        .reg-role-box {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.35rem; padding: 0.9rem 0.5rem; border: 2px solid #e5e7eb; border-radius: 10px;
+            color: #6b7280; transition: all 0.15s ease; font-size: 0.95rem; font-weight: 500;
+        }
+        .reg-role-box i { font-size: 1.5rem; }
+        .reg-role-option input[type="radio"]:checked + .reg-role-box {
+            border-color: #0d6efd; color: #0d6efd; background-color: #f0f6ff;
+        }
+        .reg-role-option:hover .reg-role-box { border-color: #b6c8e6; }
+    </style>
 }

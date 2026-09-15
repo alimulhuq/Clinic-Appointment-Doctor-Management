@@ -32,6 +32,8 @@
                     }
 
                     <form asp-action="BookAppointment" asp-controller="Patient" method="post" id="bookingForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
                         <input asp-for="DoctorId" type="hidden" />
                         <input asp-for="DoctorName" type="hidden" />
                         <input asp-for="Specialization" type="hidden" />
@@ -39,7 +41,8 @@
                         <!-- Date -->
                         <div class="mb-3">
                             <label asp-for="AppointmentDate" class="form-label fw-semibold">Appointment Date</label>
-                            <input asp-for="AppointmentDate" class="form-control" id="appointmentDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input asp-for="AppointmentDate" type="date" class="form-control" id="appointmentDate"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                             <span asp-validation-for="AppointmentDate" class="text-danger"></span>
                             <div id="dateError" class="text-danger small mt-1" style="display:none;"></div>
                         </div>
@@ -49,14 +52,14 @@
                             <label asp-for="AppointmentTime" class="form-label fw-semibold">Appointment Time</label>
                             <select asp-for="AppointmentTime" class="form-select" id="appointmentTime">
                                 <option value="">Select a time</option>
-                                <option value="10:00 AM">10:00 AM</option>
-                                <option value="10:30 AM">10:30 AM</option>
-                                <option value="11:00 AM">11:00 AM</option>
-                                <option value="11:30 AM">11:30 AM</option>
-                                <option value="04:00 PM">04:00 PM</option>
-                                <option value="04:30 PM">04:30 PM</option>
-                                <option value="05:00 PM">05:00 PM</option>
-                                <option value="05:30 PM">05:30 PM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="10:30">10:30 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="16:00">04:00 PM</option>
+                                <option value="16:30">04:30 PM</option>
+                                <option value="17:00">05:00 PM</option>
+                                <option value="17:30">05:30 PM</option>
                             </select>
                             <span asp-validation-for="AppointmentTime" class="text-danger"></span>
                         </div>
@@ -89,12 +92,10 @@
             const errorDiv = document.getElementById('dateError');
             const form = document.getElementById('bookingForm');
 
-            // Function to validate date and time combination
             function validateDateTime() {
                 const selectedDate = new Date(dateInput.value);
                 const now = new Date();
 
-                // If no date selected, clear error
                 if (!dateInput.value) {
                     clearError();
                     return true;
@@ -103,19 +104,16 @@
                 // If selected date is today and time is past, block
                 if (selectedDate.toDateString() === now.toDateString()) {
                     if (timeSelect.value) {
-                        const timeParts = timeSelect.value.match(/(\d+):(\d+)\s*(AM|PM)/i);
-                        if (timeParts) {
-                            let hours = parseInt(timeParts[1]);
-                            const minutes = parseInt(timeParts[2]);
-                            const meridiem = timeParts[3].toUpperCase();
-                            if (meridiem === 'PM' && hours !== 12) hours += 12;
-                            if (meridiem === 'AM' && hours === 12) hours = 0;
-                            const selectedTime = new Date();
-                            selectedTime.setHours(hours, minutes, 0, 0);
-                            if (selectedTime < now) {
-                                showError('Please select a future time for today\'s appointment.');
-                                return false;
-                            }
+                        // Value format is "HH:mm" now (24-hour)
+                        const parts = timeSelect.value.split(':');
+                        const h = parseInt(parts[0]);
+                        const m = parseInt(parts[1]);
+
+                        const selectedTime = new Date();
+                        selectedTime.setHours(h, m, 0, 0);
+                        if (selectedTime < now) {
+                            showError('Please select a future time for today\'s appointment.');
+                            return false;
                         }
                     }
                 }
@@ -134,17 +132,14 @@
                 errorDiv.textContent = message;
                 errorDiv.style.display = 'block';
                 dateInput.classList.add('is-invalid');
-                dateInput.style.cursor = 'not-allowed';
             }
 
             function clearError() {
                 errorDiv.textContent = '';
                 errorDiv.style.display = 'none';
                 dateInput.classList.remove('is-invalid');
-                dateInput.style.cursor = 'pointer';
             }
 
-            // Event listeners
             dateInput.addEventListener('change', validateDateTime);
             timeSelect.addEventListener('change', validateDateTime);
             form.addEventListener('submit', function (e) {
@@ -153,20 +148,13 @@
                 }
             });
 
-            // Initial check (if page loads with a pre-selected date)
-            validateDateTime();
+            // Don't validate on page load
         })();
     </script>
     <style>
-        /* Visual cue when date is invalid */
         #appointmentDate.is-invalid {
             border-color: #dc3545;
-            cursor: not-allowed !important;
             background-color: #f8d7da;
-        }
-        /* Optional: disable time select when date is past */
-        #appointmentTime:disabled {
-            cursor: not-allowed;
         }
     </style>
 }

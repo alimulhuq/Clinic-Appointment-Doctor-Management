@@ -10,11 +10,13 @@ using BCrypt.Net;
 namespace Clinic_Application_Doctor_Management.Controllers
 {
     [Authorize(Roles = "Admin")]
-    public class AdminController : Controller{
+    public class AdminController : Controller
+    {
         private readonly ApplicationDbContext _context;
         private readonly IAuditService _audit;
 
-        public AdminController(ApplicationDbContext context, IAuditService audit){
+        public AdminController(ApplicationDbContext context, IAuditService audit)
+        {
             _context = context;
             _audit = audit;
         }
@@ -29,7 +31,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 .ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
 
-            // Weekly volume: last 7 days (including today), grouped by day of week (Mon=0 ... Sun=6)
             var today = DateTime.Today;
             var weekStart = today.AddDays(-6);
             var weekAppointments = allAppointments
@@ -41,7 +42,6 @@ namespace Clinic_Application_Doctor_Management.Controllers
 
             foreach (var appt in weekAppointments)
             {
-                // DayOfWeek: Sunday=0 ... Saturday=6 → convert to Mon=0 ... Sun=6
                 int dayIndex = ((int)appt.AppointmentDate.DayOfWeek + 6) % 7;
 
                 if (appt.Status == "Completed" || appt.Status == "Confirmed")
@@ -69,7 +69,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(model);
         }
 
-        // ---------- ALL PATIENTS LIST (admin view) ----------
+        // ---------- ALL PATIENTS LIST ----------
         public async Task<IActionResult> Patients()
         {
             var patients = await _context.Patients
@@ -97,7 +97,39 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return View(viewModels);
         }
 
-        // ---------- ALL APPOINTMENTS LIST (admin view) ----------
+        // ---------- PATIENT DETAILS ----------
+        public async Task<IActionResult> PatientDetails(int patientId)
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.Id == patientId);
+            if (patient == null)
+            {
+                TempData["ErrorMessage"] = "Patient not found.";
+                return RedirectToAction("Dashboard");
+            }
+
+            var model = new AdminPatientDetailsViewModel
+            {
+                Id = patient.Id,
+                PatientCode = $"P{patient.Id:D3}",
+                FullName = patient.FullName,
+                Email = patient.Email ?? "",
+                Phone = patient.Phone,
+                Age = patient.Age,
+                Gender = patient.Gender,
+                Address = patient.Address ?? "",
+                MedicalHistory = patient.MedicalHistory ?? "",
+                Allergies = patient.Allergies ?? "None recorded",
+                BloodGroup = patient.BloodGroup ?? "",
+                EmergencyContact = patient.EmergencyContact ?? "",
+                EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
+                CreatedAt = patient.CreatedAt
+            };
+
+            return View(model);
+        }
+
+        // ---------- ALL APPOINTMENTS ----------
         public async Task<IActionResult> Appointments()
         {
             var appointments = await _context.Appointments
@@ -124,11 +156,10 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 CreatedAt = a.CreatedAt
             }).ToList();
 
-            ViewBag.CurrentAction = "Appointments";
             return View(viewModels);
         }
 
-        // ---------- APPOINTMENT DETAILS (admin view) ----------
+        // ---------- APPOINTMENT DETAILS ----------
         public async Task<IActionResult> AppointmentDetails(int appointmentId)
         {
             var appointment = await _context.Appointments
@@ -159,11 +190,212 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 CreatedAt = appointment.CreatedAt
             };
 
-            ViewBag.CurrentAction = "AppointmentDetails";
             return View(model);
         }
 
-        // ---------- ADD DOCTOR (from dashboard) ----------
+        // ---------- ALL RECEPTIONISTS ----------
+        public async Task<IActionResult> Receptionists()
+        {
+            var receptionists = await _context.Users
+                .Where(u => u.Role == "Receptionist")
+                .OrderByDescending(u => u.Id)
+                .ToListAsync();
+
+            var viewModels = receptionists.Select(u => new ReceptionistManagementViewModel
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Username = u.FullName,
+                Email = u.Email,
+                Phone = u.Phone
+            }).ToList();
+
+            return View(viewModels);
+        }
+
+        // ---------- RECEPTIONIST DETAILS ----------
+        public async Task<IActionResult> ReceptionistDetails(int id)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Receptionist not found.";
+                return RedirectToAction("Receptionists");
+            }
+
+            var model = new ReceptionistManagementViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Username = user.FullName,
+                Email = user.Email,
+                Phone = user.Phone
+            };
+
+            return View(model);
+        }
+
+        // ---------- ADD RECEPTIONIST ----------
+        [HttpGet]
+        public IActionResult AddReceptionist() => View(new ReceptionistManagementViewModel());
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReceptionist(ReceptionistManagementViewModel model)
+        {
+            // Password is required on Add
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                ModelState.AddModelError("Password", "Password is required.");
+            }
+            if (string.IsNullOrWhiteSpace(model.ConfirmPassword))
+            {
+                ModelState.AddModelError("ConfirmPassword", "Please confirm the password.");
+            }
+
+            if (!ModelState.IsValid) return View(model);
+
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+            {
+                ModelState.AddModelError("Email", "This email is already registered.");
+                return View(model);
+            }
+
+            var user = new User
+            {
+                FullName = model.FullName,
+                Email = model.Email,
+                Phone = model.Phone,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password!),
+                Role = "Receptionist"
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            await _audit.LogAsync("Create", "Receptionist", user.Id, $"Receptionist {user.FullName} added");
+
+            TempData["SuccessMessage"] = $"Receptionist {model.FullName} added successfully.";
+            return RedirectToAction("Receptionists");
+        }
+
+        // ---------- EDIT RECEPTIONIST ----------
+        [HttpGet]
+        public async Task<IActionResult> EditReceptionist(int id)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Receptionist not found.";
+                return RedirectToAction("Receptionists");
+            }
+
+            var model = new ReceptionistManagementViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Username = user.FullName,
+                Email = user.Email,
+                Phone = user.Phone
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditReceptionist(ReceptionistManagementViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                ModelState.Remove(nameof(model.Password));
+                ModelState.Remove(nameof(model.ConfirmPassword));
+            }
+
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == model.Id && u.Role == "Receptionist");
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Receptionist not found.";
+                return RedirectToAction("Receptionists");
+            }
+
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email && u.Id != model.Id))
+            {
+                ModelState.AddModelError("Email", "This email is already used by another account.");
+                return View(model);
+            }
+
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.Phone = model.Phone;
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+            }
+
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("Update", "Receptionist", user.Id, $"Receptionist {user.FullName} updated");
+
+            TempData["SuccessMessage"] = $"Receptionist {model.FullName} updated successfully.";
+            return RedirectToAction("Receptionists");
+        }
+
+        // ---------- DELETE RECEPTIONIST ----------
+        [HttpGet]
+        public async Task<IActionResult> DeleteReceptionist(int id)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Receptionist not found.";
+                return RedirectToAction("Receptionists");
+            }
+
+            var model = new ReceptionistManagementViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Username = user.FullName,
+                Email = user.Email,
+                Phone = user.Phone
+            };
+
+            return View(model);
+        }
+
+        [HttpPost, ActionName("DeleteReceptionist")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteReceptionistConfirmed(int id)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Receptionist");
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Receptionist not found.";
+                return RedirectToAction("Receptionists");
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            await _audit.LogAsync("Delete", "Receptionist", id, $"Receptionist {user.FullName} deleted");
+
+            TempData["SuccessMessage"] = $"Receptionist {user.FullName} removed successfully.";
+            return RedirectToAction("Receptionists");
+        }
+
+        // ---------- ADD DOCTOR ----------
         [HttpGet]
         public IActionResult AddDoctor() => View(new DoctorManagementViewModel());
 
@@ -189,32 +421,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        // ---------- ADD RECEPTIONIST (from dashboard) ----------
-        [HttpGet]
-        public IActionResult AddReceptionist() => View(new ReceptionistManagementViewModel());
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddReceptionist(ReceptionistManagementViewModel model)
-        {
-            if (!ModelState.IsValid) return View(model);
-
-            var user = new User
-            {
-                FullName = model.FullName,
-                Email = model.Email,
-                Phone = model.Phone,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("DefaultPassword123!"),
-                Role = "Receptionist"
-            };
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            await _audit.LogAsync("Create", "Receptionist", user.Id, $"Receptionist {user.FullName} added");
-            TempData["SuccessMessage"] = $"Receptionist {model.FullName} added.";
-            return RedirectToAction("Dashboard");
-        }
-
-        // ---------- PROFILE (view & update) ----------
+        // ---------- PROFILE ----------
         [HttpGet]
         public async Task<IActionResult> Profile()
         {

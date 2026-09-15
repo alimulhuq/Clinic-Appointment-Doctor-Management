@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace ClinicManagementSystem.ViewModels
 {
@@ -28,5 +29,16 @@ namespace ClinicManagementSystem.ViewModels
 
         [Required]
         public string About { get; set; } = string.Empty;
+
+        // ---------- SCHEDULE (7 rows, one per day) ----------
+        public List<DoctorDayScheduleInput> Schedule { get; set; } = new();
+    }
+
+    public class DoctorDayScheduleInput
+    {
+        public string Day { get; set; } = string.Empty;       // "Monday"
+        public bool IsEnabled { get; set; }                   // checkbox
+        public string StartTime { get; set; } = "09:00";      // "HH:mm"
+        public string EndTime { get; set; } = "17:00";        // "HH:mm"
     }
 }

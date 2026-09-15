@@ -1,18 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
 
 namespace ClinicManagementSystem.ViewModels
 {
     public class DoctorScheduleViewModel
     {
-        [Required(ErrorMessage = "Please select a day.")]
-        public string? Day { get; set; }
-
-        [Required(ErrorMessage = "Please select a start time.")]
-        [Display(Name = "Start Time")]
-        public string? StartTime { get; set; }
-
-        [Required(ErrorMessage = "Please select an end time.")]
-        [Display(Name = "End Time")]
-        public string? EndTime { get; set; }
+        public int Id { get; set; }
+        public string Day { get; set; } = string.Empty;         // "Monday" etc.
+        public string StartTime { get; set; } = string.Empty;    // "10:00"
+        public string EndTime { get; set; } = string.Empty;      // "13:00"
+        public bool IsActive { get; set; } = true;
     }
 }

@@ -25,6 +25,37 @@
             }
 
             <form asp-action="Login" asp-controller="Account" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post" class="auth-form">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                <div class="mb-3">
+                    <label class="form-label auth-label">Login As</label>
+                    <div class="role-selector">
+                        <label class="role-option">
+                            <input type="radio" asp-for="SelectedRole" value="Patient" />
+                            <span class="role-box">
+                                <i class="bi bi-person"></i>
+                                <span>Patient</span>
+                            </span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" asp-for="SelectedRole" value="Doctor" />
+                            <span class="role-box">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Doctor</span>
+                            </span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" asp-for="SelectedRole" value="Receptionist" />
+                            <span class="role-box">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                                <span>Receptionist</span>
+                            </span>
+                        </label>
+                    </div>
+                    <span asp-validation-for="SelectedRole" class="text-danger small"></span>
+                </div>
+
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label auth-label">Email Address</label>
                     <input asp-for="Email" class="form-control auth-input" placeholder="you@example.com" autocomplete="username" />
@@ -43,13 +74,29 @@
             <div class="auth-footer text-center">
                 <p class="mb-2">
                     <span class="text-muted">Don't have an account?</span>
-                    <a asp-controller="Account" asp-action="Register" class="auth-link">Create Patient Account</a>
+                    <a asp-controller="Account" asp-action="Register" class="auth-link">Create Account</a>
                 </p>
                 <a asp-controller="Account" asp-action="AdminLogin" class="auth-link-muted">Admin Login</a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .role-selector { display: flex; gap: 0.5rem; }
+    .role-option { flex: 1; cursor: pointer; margin: 0; }
+    .role-option input[type="radio"] { display: none; }
+    .role-box {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 0.3rem; padding: 0.7rem 0.4rem; border: 2px solid #e5e7eb; border-radius: 10px;
+        color: #6b7280; transition: all 0.15s ease; font-size: 0.85rem; font-weight: 500;
+    }
+    .role-box i { font-size: 1.3rem; }
+    .role-option input[type="radio"]:checked + .role-box {
+        border-color: #0d6efd; color: #0d6efd; background-color: #f0f6ff;
+    }
+    .role-option:hover .role-box { border-color: #b6c8e6; }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

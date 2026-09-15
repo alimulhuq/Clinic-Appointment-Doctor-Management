@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Clinic_Application_Doctor_Management.Models{
-    public class Doctor{
+namespace Clinic_Application_Doctor_Management.Models
+{
+    public class Doctor
+    {
         public int Id { get; set; }
 
         [Required, StringLength(100)]
@@ -22,6 +24,9 @@ namespace Clinic_Application_Doctor_Management.Models{
 
         [Range(0, 60)]
         public int Experience { get; set; }
+
+        [StringLength(20)]
+        public string? Gender { get; set; }
 
         [StringLength(500)]
         public string? About { get; set; }

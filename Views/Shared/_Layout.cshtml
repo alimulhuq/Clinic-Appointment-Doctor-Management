@@ -5,25 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"] - Clinic Management System</title>
 
-    <!-- Bootstrap -->
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <!-- Bootstrap Icons (admin sidebar) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
-    <!-- Our CSS -->
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="/ClinicManagementSystem.styles.css" asp-append-version="true" />
 </head>
 <body class="d-flex flex-column min-vh-100">
 @{
-    var isAdmin = User.Identity?.IsAuthenticated == true
-        && User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Admin";
+    var role = User.Identity?.IsAuthenticated == true
+        ? User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+        : null;
+
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    // Sidebar shows ONLY when (1) user is Admin AND (2) the request is routed to AdminController
+    var isAdmin = role == "Admin"
+        && string.Equals(currentController, "Admin", StringComparison.OrdinalIgnoreCase);
 }
 
 @if (isAdmin)
 {
-    <!-- ========== ALL ADMIN PAGES: SIDEBAR LAYOUT ========== -->
+    <!-- ========== ADMIN PAGES: SIDEBAR LAYOUT ========== -->
     <div class="admin-layout">
         <nav id="adminSidebar" class="admin-sidebar d-flex flex-column">
             <div class="sidebar-brand">
@@ -46,7 +49,7 @@
                         <span>Patients</span>
                     </a>
                 </li>
-               <li class="nav-item">
+                <li class="nav-item">
                     <a class="nav-link admin-nav-link @(currentAction == "Appointments" || currentAction == "AppointmentDetails" ? "active" : "")"
                        asp-controller="Admin" asp-action="Appointments">
                         <i class="bi bi-calendar-check"></i>
@@ -61,10 +64,10 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link admin-nav-link @(currentAction == "AddReceptionist" ? "active" : "")"
-                       asp-controller="Admin" asp-action="AddReceptionist">
+                    <a class="nav-link admin-nav-link @(currentAction == "Receptionists" || currentAction == "AddReceptionist" || currentAction == "ReceptionistDetails" || currentAction == "EditReceptionist" || currentAction == "DeleteReceptionist" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Receptionists">
                         <i class="bi bi-person-plus"></i>
-                        <span>Add Receptionist</span>
+                        <span>Receptionists</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -113,7 +116,7 @@
 }
 else
 {
-    <!-- ========== NON-ADMIN: ORIGINAL TOP NAVBAR (unchanged) ========== -->
+    <!-- ========== NON-ADMIN: TOP NAVBAR ========== -->
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
             <div class="container">
@@ -138,16 +141,17 @@ else
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-
                             string dashboardController = "";
-                            switch (userRole)
+                            switch (role)
                             {
                                 case "Doctor":
                                     dashboardController = "Doctor";
                                     break;
                                 case "Receptionist":
                                     dashboardController = "Receptionist";
+                                    break;
+                                case "Admin":
+                                    dashboardController = "Admin";
                                     break;
                                 default:
                                     dashboardController = "Patient";

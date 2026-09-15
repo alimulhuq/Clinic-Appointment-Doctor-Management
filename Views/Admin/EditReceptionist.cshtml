@@ -1,0 +1,81 @@
+@model ClinicManagementSystem.ViewModels.ReceptionistManagementViewModel
+
+@{
+    ViewData["Title"] = "Edit Receptionist";
+}
+
+<div class="container py-4">
+
+    <a asp-action="Receptionists" class="btn btn-outline-secondary btn-sm mb-3">← Back to Receptionists</a>
+
+    <h3 class="mb-4">Edit Receptionist</h3>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <form asp-action="EditReceptionist" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="FullName" class="form-label">Full Name</label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Username" class="form-label">Username</label>
+                        <input asp-for="Username" class="form-control" />
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Phone" class="form-label">Phone</label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <p class="text-muted small">
+                    Leave password blank to keep the current password.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Password" class="form-label">New Password</label>
+                        <input asp-for="Password" class="form-control" placeholder="Leave blank to keep current" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label">Confirm New Password</label>
+                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter new password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-action="Receptionists" class="btn btn-outline-secondary">Cancel</a>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -57,17 +57,32 @@ namespace Clinic_Application_Doctor_Management.Controllers
                         DoctorName = a.Doctor.Name,
                         Specialization = a.Doctor.Specialization,
                         AppointmentDate = a.AppointmentDate,
-                        AppointmentTime = a.AppointmentTime.ToString(@"hh\:mm tt"),
+                        AppointmentTime = a.AppointmentTime.ToString(@"hh\:mm"),
                         Status = a.Status
                     }).ToListAsync()
             };
             return View(model);
         }
 
-        // ---------------- DOCTORS LIST ----------------
-        public async Task<IActionResult> Doctors()
+        // ---------------- DOCTORS LIST (with filters + dynamic specializations) ----------------
+        public async Task<IActionResult> Doctors(string search, string specialization)
         {
-            var doctors = await _context.Doctors.ToListAsync();
+            var query = _context.Doctors
+                .Include(d => d.Schedules)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(d => d.Name.Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(specialization))
+            {
+                query = query.Where(d => d.Specialization == specialization);
+            }
+
+            var doctors = await query.ToListAsync();
+
             var viewModels = doctors.Select(d => new DoctorViewModel
             {
                 DoctorId = d.Id,
@@ -81,6 +96,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
                     ? $"{d.Schedules.First(s => s.IsActive).StartTime.ToString(@"hh\:mm")} - {d.Schedules.First(s => s.IsActive).EndTime.ToString(@"hh\:mm")}"
                     : "Not specified"
             }).ToList();
+
+            // -------- Distinct specializations from DB --------
+            ViewBag.Specializations = await _context.Doctors
+                .Where(d => !string.IsNullOrEmpty(d.Specialization))
+                .Select(d => d.Specialization)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToListAsync();
+
+            ViewBag.Search = search;
+            ViewBag.SelectedSpecialization = specialization;
+
             return View(viewModels);
         }
 
@@ -126,7 +153,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 DoctorName = doctor.Name,
                 Specialization = doctor.Specialization,
                 AppointmentDate = DateTime.Today.AddDays(1),
-                AppointmentTime = "09:00 AM"
+                AppointmentTime = "09:00"
             };
             return View(model);
         }
@@ -136,7 +163,16 @@ namespace Clinic_Application_Doctor_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BookAppointment(AppointmentViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!TimeSpan.TryParse(model.AppointmentTime, out var parsedTime))
+            {
+                ModelState.AddModelError("AppointmentTime", "Invalid time format.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await ReloadDoctorInfoAsync(model);
+                return View(model);
+            }
 
             var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == userEmail);
@@ -147,7 +183,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
                 DoctorId = model.DoctorId,
                 PatientId = patient.Id,
                 AppointmentDate = model.AppointmentDate,
-                AppointmentTime = TimeSpan.Parse(model.AppointmentTime),
+                AppointmentTime = parsedTime,
                 Reason = model.Reason,
                 Status = "Pending",
                 CreatedAt = DateTime.Now
@@ -157,12 +193,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             if (!isValid)
             {
                 if (!string.IsNullOrEmpty(errorMessage)) ModelState.AddModelError("", errorMessage);
-                var doctor = await _context.Doctors.FindAsync(model.DoctorId);
-                if (doctor != null)
-                {
-                    model.DoctorName = doctor.Name;
-                    model.Specialization = doctor.Specialization;
-                }
+                await ReloadDoctorInfoAsync(model);
                 return View(model);
             }
 
@@ -170,8 +201,18 @@ namespace Clinic_Application_Doctor_Management.Controllers
             await _context.SaveChangesAsync();
             await _audit.LogAsync("Create", "Appointment", appointment.Id, $"Appointment booked by {patient.Email}");
 
-            TempData["SuccessMessage"] = $"Appointment requested with {model.DoctorName} on {model.AppointmentDate:dd MMM yyyy} at {model.AppointmentTime}.";
+            TempData["SuccessMessage"] = $"Appointment requested with {model.DoctorName} on {model.AppointmentDate:dd MMM yyyy} at {parsedTime.ToString(@"hh\:mm")}.";
             return RedirectToAction("MyAppointments");
+        }
+
+        private async Task ReloadDoctorInfoAsync(AppointmentViewModel model)
+        {
+            var doctor = await _context.Doctors.FindAsync(model.DoctorId);
+            if (doctor != null)
+            {
+                model.DoctorName = doctor.Name;
+                model.Specialization = doctor.Specialization;
+            }
         }
 
         // ---------------- MY APPOINTMENTS ----------------
@@ -273,7 +314,7 @@ namespace Clinic_Application_Doctor_Management.Controllers
             return RedirectToAction("Profile");
         }
 
-        // ---------------- CHANGE PASSWORD (NEW) ----------------
+        // ---------------- CHANGE PASSWORD ----------------
         [HttpGet]
         public IActionResult ChangePassword() => View();
 
